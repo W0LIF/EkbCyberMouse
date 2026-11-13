@@ -1,0 +1,59 @@
+name: ekb_connect
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ekb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ekb}
+      POSTGRES_DB: ${POSTGRES_DB:-ekb_connect}
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ekb} -d ${POSTGRES_DB:-ekb-connect}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend:latest
+    command: osrm-routed --algorithm mld /data/ural-fed-district-latest.osrm
+    volumes:
+      - ./data:/data
+    ports:
+      - "5000:5000"
+    # Требует предварительной подготовки: infra/osrm/prepare.sh
+    profiles: ["osrm"]
+
+  api:
+    build: ./api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ekb}:${POSTGRES_PASSWORD:-ekb}@postgres:5432/${POSTGRES_DB:-ekb_connect}
+      OSRM_URL: http://osrm:5000
+      SOLVER_URL: http://solver:8080
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      solver:
+        condition: service_started
+
+  solver:
+    build: ./solver
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    profiles: ["ui"]
+
+volumes:
+  pgdata:
