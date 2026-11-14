@@ -1,0 +1,43 @@
+/* Дизайн-токены Rostelecom — белая / фиолетовая / оранжевая палитра */
+:root {
+  /* === Brand === */
+  --rt-brand: #7C3AED;
+  --rt-brand-600: #6D28D9;
+  --rt-brand-700: #5B21B6;
+  --rt-brand-50: #F3EEFF;
+  --rt-brand-100: #EDE9FE;
+  --rt-brand-deep: #1E1145;
+
+  /* === Accent === */
+  --rt-accent: #FF6B00;
+  --rt-accent-500: #F97316;
+  --rt-accent-50: #FFF3EA;
+
+  /* === Semantic === */
+  --rt-success: #059669;
+  --rt-success-50: #ECFDF5;
+  --rt-warning: #D97706;
+  --rt-warning-50: #FFFBEB;
+  --rt-danger: #DC2626;
+  --rt-danger-50: #FEF2F2;
+  --rt-info: #2563EB;
+  --rt-info-50: #EFF6FF;
+
+  /* === Surfaces === */
+  --rt-white: #FFFFFF;
+  --rt-bg: #F5F7FA;
+  --rt-bg-alt: #F9FAFB;
+  --rt-border: #E5E7EB;
+  --rt-border-light: #F3F4F6;
+
+  /* === Text === */
+  --rt-ink: #1A1A2E;
+  --rt-ink-muted: #6B7280;
+  --rt-ink-light: #9CA3AF;
+
+  /* === Shadows === */
+  --rt-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --rt-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --rt-shadow-brand: 0 4px 16px rgba(124, 58, 237, 0.2);
+  --rt-shadow-accent: 0 4px 16px rgba(255, 107, 0, 0.22);
+}
