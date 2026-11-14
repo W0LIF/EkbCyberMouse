@@ -2,6 +2,9 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 import time
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 from api.app.models import Plan, DayInput, LoadResult, Order, TimeWindow, Equipment
 from api.app.services.matrix_store import matrix_store
@@ -10,6 +13,7 @@ from api.app.repositories.sql_day_repo import SqlDayRepo
 from api.app.repositories.sql_orders_repo import SqlOrdersRepo
 from api.app.repositories.sql_plans_repo import SqlPlansRepo
 from api.app.repositories.sql_reference_repo import SqlReferenceRepo
+from api.app.repositories.sql_events_repo import SqlEventsRepo
 from solver.app.vrp import solve_vrp
 
 router = APIRouter(tags=["plan"])
@@ -47,14 +51,16 @@ def _flat_to_order(row: dict) -> dict:
 
 @router.put("/days/{date}", response_model=LoadResult)
 async def put_day(date: str, day: DayInput, db: AsyncSession = Depends(get_db)):
+    """Загрузка нарядов дня."""
     day_repo = SqlDayRepo(db)
     orders_repo = SqlOrdersRepo(db)
+
     await day_repo.upsert(day)
     await orders_repo.upsert_many(date, day.orders)
     return {"status": "loaded", "counts": {"orders": len(day.orders)}}
 
 
-@router.post("/days/{date}/plan", response_model=Plan)
+@router.post("/days/{date}/plan")
 async def build_plan(date: str, db: AsyncSession = Depends(get_db)):
     if not matrix_store.is_loaded():
         raise HTTPException(400, "Матрица не загружена")
@@ -62,11 +68,16 @@ async def build_plan(date: str, db: AsyncSession = Depends(get_db)):
     day_repo = SqlDayRepo(db)
     orders_repo = SqlOrdersRepo(db)
     ref_repo = SqlReferenceRepo(db)
-    plans_repo = SqlPlansRepo(db)
 
     day_row = await day_repo.get(date)
     if not day_row:
         raise HTTPException(404, "День не загружен")
+
+    # Проверка: если события уже приняты — 409
+    from api.app.repositories.sql_events_repo import SqlEventsRepo
+    has_events = await SqlEventsRepo(db).count_events(date)
+    if has_events > 0:
+        raise HTTPException(409, f"События уже приняты для {date}")
 
     staff = await ref_repo.get_staff()
     work_types = await ref_repo.get_work_types()
@@ -74,7 +85,6 @@ async def build_plan(date: str, db: AsyncSession = Depends(get_db)):
     if not staff or not work_types or not service_centers:
         raise HTTPException(400, "Справочники не загружены")
 
-    # Восстанавливаем DayInput: важно, что day.now — datetime
     day_input = DayInput(
         date=date,
         now=day_row["model_now"],
@@ -82,11 +92,14 @@ async def build_plan(date: str, db: AsyncSession = Depends(get_db)):
         absent_staff_ids=day_row["absent_staff_ids"] or [],
     )
 
-    # Заказы в виде dict (из БД) — солвер понимает и Pydantic, и dict
     orders_dicts = [_flat_to_order(r) for r in await orders_repo.get_by_date(date)]
-
-    # Собираем TravelMatrix из MatrixStore
     matrix = matrix_store.as_matrix()
+
+    # Debug: log first order's equipment
+    if orders_dicts:
+        with open("plan_debug.log", "a") as dbg:
+            dbg.write(f"First order: {orders_dicts[0]['order_id']} eq={orders_dicts[0].get('required_equipment')}\n")
+            dbg.write(f"Orders count: {len(orders_dicts)}, Staff: {len(staff)}\n")
 
     start = time.time()
     try:
@@ -99,15 +112,15 @@ async def build_plan(date: str, db: AsyncSession = Depends(get_db)):
             service_centers=service_centers,
             matrix=matrix,
             plan_version=1,
-            max_runtime_seconds=30,
+            max_runtime_seconds=120,
         )
         plan.computation_ms = int((time.time() - start) * 1000)
-        await plans_repo.save_version(date, plan)
+        await SqlPlansRepo(db).save_version(date, plan)
         return plan
-    except Exception:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(500, "Ошибка солвера")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Ошибка построения плана: {str(e)[:500]}")
 
 
 @router.get("/days/{date}/plan", response_model=Plan)

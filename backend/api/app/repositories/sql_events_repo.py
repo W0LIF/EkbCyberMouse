@@ -30,6 +30,17 @@ class SqlEventsRepo:
 
     async def get_last_timestamp(self, date: str) -> datetime | None:
         d = self._parse_date(date)
-        res = await self.session.execute(text("SELECT MAX(timestamp) as ts FROM events WHERE date = :d"), {"d": d})
+        res = await self.session.execute(text("SELECT MAX(timestamp) FROM events WHERE date = :d"), {"d": d})
         row = res.first()
-        return row["ts"] if row and row["ts"] else None
+        return row[0] if row and row[0] else None
+
+    async def count_events(self, date: str) -> int:
+        d = self._parse_date(date)
+        res = await self.session.execute(text("SELECT COUNT(*) FROM events WHERE date = :d"), {"d": d})
+        row = res.first()
+        return row[0] if row else 0
+
+    async def delete_date(self, date: str) -> None:
+        d = self._parse_date(date)
+        await self.session.execute(text("DELETE FROM events WHERE date = :d"), {"d": d})
+        await self.session.commit()

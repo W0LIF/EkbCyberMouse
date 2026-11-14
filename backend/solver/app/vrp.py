@@ -6,8 +6,9 @@ from datetime import datetime, timedelta
 from typing import Iterable
 
 import numpy as np
-from pyvrp import ProblemData, Depot, solve as pyvrp_solve
+from pyvrp import ProblemData, Depot, PenaltyParams, solve as pyvrp_solve
 from pyvrp.stop import MaxRuntime
+from pyvrp.solve import SolveParams
 
 from api.app.models import (
     Plan, Route, Stop, RouteTotals, PlanSummary,
@@ -143,7 +144,18 @@ def solve_vrp(
         tw_late = max(tw_late, tw_early + 1)
 
         # delivery должен совпадать по длине с capacity vehicle_type
-        delivery = [1] + [0] * (cap_len - 1)
+        # Используем реальные требования оборудования из заказа (все 3 типа)
+        req_eq = o.get("required_equipment", {})
+        delivery = [
+            req_eq.get("ONT", 0),
+            req_eq.get("ROUTER", 0),
+            req_eq.get("STB", 0),
+        ]
+        # Если capacity короче — обрезаем; если длиннее — дополняем нулями
+        if len(delivery) > cap_len:
+            delivery = delivery[:cap_len]
+        elif len(delivery) < cap_len:
+            delivery += [0] * (cap_len - len(delivery))
         pickup = [0] * cap_len
 
         m.add_client(
@@ -176,19 +188,24 @@ def solve_vrp(
         cap = st["equipment_capacity"]
         cap_list = [cap["ONT"], cap["ROUTER"], cap["STB"]] if isinstance(cap, dict) else []
 
+        # tw_early/tw_late — это временное окно для начала/окончания маршрута
+        # shift_duration — максимальная длительность работы (смена)
+        # Оставляем tw_late большим, ограничиваем через shift_duration
         m.add_vehicle_type(
             num_available=1,
             start_depot=depot,
             end_depot=depot,
             capacity=cap_list,
             tw_early=start_min,
-            tw_late=end_min,
+            tw_late=24 * 60,  # Весь день доступен
             shift_duration=end_min - start_min,
         )
         staff_order.append(st)
 
     if not staff_order:
         return _empty_plan(date, plan_version, day.now, orders_d, skipped_prefilter, "NO_QUALIFIED_STAFF")
+
+    logger.info(f"Staff in solver: {len(staff_order)}, clients: {len(client_to_order)}, vehicle types: {len(m.vehicle_types)}")
 
     # ---- 5. Матрицы расстояний / длительности ------------------------------
     n_loc = len(m.locations)
@@ -225,7 +242,16 @@ def solve_vrp(
         duration_matrices=[durations],
     )
 
-    result = pyvrp_solve(data, stop=MaxRuntime(max_runtime_seconds))
+    # Penalty params: снижаем penalty чтобы солвер агрессивнее искал решения
+    penalty = PenaltyParams(
+        solutions_between_updates=300,
+        penalty_increase=1.34,
+        penalty_decrease=0.32,
+        target_feasible=0.43,
+    )
+    params = SolveParams(penalty=penalty)
+
+    result = pyvrp_solve(data, stop=MaxRuntime(max_runtime_seconds), params=params)
     solution = result.best
 
     # ---- 6. Маппинг результата в Plan --------------------------------------
@@ -335,6 +361,64 @@ def solve_vrp(
             prev_location_idx = client_loc_idx
             cur_time_min = end
 
+        # ---- 6a. BREAK-постобработка: вставка перерыва в маршрут ----------
+        shift = st["shift"]
+        break_duration = int(shift.get("break_duration_min", 0))
+        break_window = shift.get("break_window") or {}
+        break_from_str = break_window.get("from_") if isinstance(break_window, dict) else None
+        break_to_str = break_window.get("to") if isinstance(break_window, dict) else None
+
+        # Вставляем BREAK между визитами если есть break_window и длительность
+        if break_duration > 0 and break_from_str and break_to_str:
+            try:
+                bf = datetime.strptime(break_from_str, "%H:%M").time()
+                bt = datetime.strptime(break_to_str, "%H:%M").time()
+                bf_min = bf.hour * 60 + bf.minute
+                bt_min = bt.hour * 60 + bt.minute
+                if bt_min <= bf_min:
+                    bt_min += 24 * 60
+
+                # Ищем место для BREAK — между первым и последним визитом
+                # когда cur_time_min попадает в window
+                break_insert_idx = None
+                for si in range(1, len(stops)):  # пропускаем DEPOT_START
+                    if stops[si].type == "VISIT" and si < len(stops) - 1:
+                        # Время после визита — пытаемся вставить BREAK
+                        if cur_time_min >= bf_min and cur_time_min <= bt_min:
+                            break_insert_idx = si
+                            break
+                        # Если визит ещё не начался — пробуем start визита
+                        visit_start_str = stops[si].start
+                        try:
+                            visit_start_dt = datetime.fromisoformat(visit_start_str)
+                            visit_start_min = (visit_start_dt.hour * 60 + visit_start_dt.minute)
+                            if visit_start_min >= bf_min and visit_start_min <= bt_min:
+                                break_insert_idx = si
+                                break
+                        except (ValueError, TypeError):
+                            pass
+
+                if break_insert_idx is not None:
+                    break_start_min = max(cur_time_min, bf_min)
+                    break_end_min = break_start_min + break_duration
+                    break_stop = Stop(
+                        seq=seq,
+                        type="BREAK",
+                        location_id=st["service_center_id"],
+                        arrival=_iso(midnight + timedelta(minutes=break_start_min)),
+                        start=_iso(midnight + timedelta(minutes=break_start_min)),
+                        end=_iso(midnight + timedelta(minutes=break_end_min)),
+                    )
+                    # Сдвигаем все последующие seq
+                    for s in stops[break_insert_idx:]:
+                        s.seq += 1
+                    stops.insert(break_insert_idx, break_stop)
+                    seq += 1
+                    cur_time_min = break_end_min
+            except (ValueError, TypeError):
+                pass  # Если не удалось распарсить break_window — пропускаем
+
+        # ---- 6b. Сбор маршрута с итогами ------------------------------------
         routes_out.append(Route(
             staff_id=st["staff_id"],
             service_center_id=st["service_center_id"],

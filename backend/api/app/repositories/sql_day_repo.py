@@ -12,6 +12,10 @@ class SqlDayRepo:
 
     async def upsert(self, day: DayInput) -> None:
         d = self._parse_date(day.date)
+        # Удаляем связанные записи (FK constraints)
+        await self.session.execute(text("DELETE FROM alerts WHERE date = :d"), {"d": d})
+        await self.session.execute(text("DELETE FROM events WHERE date = :d"), {"d": d})
+        await self.session.execute(text("DELETE FROM plan_versions WHERE date = :d"), {"d": d})
         await self.session.execute(text("DELETE FROM days WHERE date = :d"), {"d": d})
         await self.session.execute(
             text("INSERT INTO days (date, model_now, absent_staff_ids, event_received) VALUES (:d, :now, :absent, FALSE)"),
@@ -35,3 +39,9 @@ class SqlDayRepo:
         res = await self.session.execute(text("SELECT event_received FROM days WHERE date = :d"), {"d": d})
         row = res.first()
         return row["event_received"] if row else False
+
+    async def delete_date(self, date: str) -> None:
+        """Удалить день (для сброса при PUT /days/{date})."""
+        d = self._parse_date(date)
+        await self.session.execute(text("DELETE FROM days WHERE date = :d"), {"d": d})
+        await self.session.commit()
