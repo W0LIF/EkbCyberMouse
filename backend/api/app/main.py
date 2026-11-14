@@ -1,17 +1,20 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-from api.app.models import DayInput, Staff, TravelMatrix, Plan, WorkType
-from solver.app.vrp import solve_vrp
+from fastapi.middleware.cors import CORSMiddleware
+from api.app.routers import reference, plan
 
-app = FastAPI(title="Solver Service")
+app = FastAPI(title="RTK Dispatch API", version="1.0.0")
 
-class SolveRequest(BaseModel):
-    day: DayInput
-    staff: list[Staff]
-    matrix: TravelMatrix
-    work_types: list[WorkType]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.post("/solve", response_model=Plan)
-async def solve(request: SolveRequest):
-    plan = solve_vrp(request.day, request.staff, request.matrix, request.work_types)
-    return plan
+app.include_router(reference.router, prefix="/api/v1")
+app.include_router(plan.router, prefix="/api/v1")
+
+@app.get("/api/v1/health")
+def health_check():
+    return {"status": "ok"}

@@ -1,138 +1,185 @@
 from datetime import datetime
 from pyvrp import Model
 from pyvrp.stop import MaxRuntime
-from pyvrp import Solve
-from api.app.models import DayInput, Staff, TravelMatrix, Plan, WorkType
+from api.app.models import DayInput, Staff, TravelMatrix, Plan, Route, Stop, UnassignedOrder, WorkType
 
-def to_sec(dt_str: str, base_date: datetime) -> int:
-    dt = datetime.fromisoformat(dt_str)
+def to_sec(dt, base_date):
+    if isinstance(dt, str):
+        dt = datetime.fromisoformat(dt)
     return int((dt - base_date).total_seconds())
 
 def solve_vrp(day: DayInput, staff_list: list[Staff], matrix: TravelMatrix, work_types: list[WorkType]) -> Plan:
     m = Model()
-    base_date = datetime.fromisoformat(day.now)
-    
+    base_date = day.now
     wt_dict = {wt.code: wt.duration_min * 60 for wt in work_types}
-    
     point_idx = {p: i for i, p in enumerate(matrix.points)}
     
-    depots = {}
+    # 1. Создаём все локации
+    all_point_ids = list(set([sc.service_center_id for sc in staff_list] + [o.building_id for o in day.orders]))
+    loc_objects = []
+    loc_map = {}
+    
+    for i, point_id in enumerate(all_point_ids):
+        loc = m.add_location(x=0, y=0)
+        loc_objects.append(loc)
+        loc_map[point_id] = i
+    
+    # 2. Депо
     sc_ids = list(set(s.service_center_id for s in staff_list))
-    for sc in sc_ids:
-        depots[sc] = m.add_depot(x=0, y=0)
+    depot_objects = []
+    depot_map = {}
     
+    for i, sc_id in enumerate(sc_ids):
+        depot = m.add_depot(location=loc_objects[loc_map[sc_id]])
+        depot_objects.append(depot)
+        depot_map[sc_id] = i
     
-    NUM_SKILLS = 3
-    
-    
-    client_map = {}
+    # 3. Клиенты (наряды)
+    client_order_ids = []
     for order in day.orders:
-        tw_early = to_sec(order.slot.start, base_date)
-        tw_late = to_sec(order.latest_start, base_date)
+        tw_early = max(0, to_sec(order.slot.start, base_date))
+        tw_late = max(0, to_sec(order.latest_start, base_date))
         
-      
-        delivery = [0] * NUM_SKILLS
+        # Навыки (профили, технологии, высота)
+        delivery = [0, 0, 0]
         if order.work_type_code in ["REPAIR", "DEGRADATION", "DISMANTLE", "SURVEY_PRIVATE"]:
             delivery[0] = 1
         else:
             delivery[1] = 1
-            
         if order.requires_height:
             delivery[2] = 1
             
         duration = wt_dict.get(order.work_type_code, 3600)
         
-        c = m.add_client(
-            x=0, y=0,
+        m.add_client(
+            location=loc_objects[loc_map[order.building_id]],
             delivery=delivery,
             service_duration=duration,
             tw_early=tw_early,
-            tw_late=tw_late
+            tw_late=tw_late,
+            required=False, 
+            prize=100000
         )
-        client_map[c] = order.order_id
+        client_order_ids.append(order.order_id)
 
-    
-    vehicle_types = {}
+    # 4. Машины (сотрудники)
+    vehicle_staff_ids = []
     for s in staff_list:
-        capacity = [0] * NUM_SKILLS
-        if "LTP3" in s.profiles: capacity[0] = 1
-        if "INSTALL" in s.profiles: capacity[1] = 1
-        if s.height_permit: capacity[2] = 1
+        capacity = [1000, 1000, 1000]
+        if "LTP3" not in s.profiles: capacity[0] = 0
+        if "INSTALL" not in s.profiles: capacity[1] = 0
+        if not s.height_permit: capacity[2] = 0
         
-        shift_start = to_sec(f"{day.date}T{s.shift.start}:00+05:00", base_date)
-        shift_end = to_sec(f"{day.date}T{s.shift.end}:00+05:00", base_date)
+        shift_start_time = datetime.strptime(s.shift.start, "%H:%M").time()
+        shift_end_time = datetime.strptime(s.shift.end, "%H:%M").time()
+        shift_start_dt = datetime.combine(day.now.date(), shift_start_time, tzinfo=day.now.tzinfo)
+        shift_end_dt = datetime.combine(day.now.date(), shift_end_time, tzinfo=day.now.tzinfo)
         
-        v_type = m.add_vehicle_type(
+        v_start = max(0, to_sec(shift_start_dt, base_date))
+        v_end = max(0, to_sec(shift_end_dt, base_date))
+        
+        m.add_vehicle_type(
             num_available=1,
             capacity=capacity,
-            start_depot=depots[s.service_center_id],
-            end_depot=depots[s.service_center_id],
-            tw_early=shift_start,
-            tw_late=shift_end
+            start_depot=depot_objects[depot_map[s.service_center_id]],
+            end_depot=depot_objects[depot_map[s.service_center_id]],
+            tw_early=v_start,
+            tw_late=v_end
         )
-        vehicle_types[v_type] = s.staff_id
+        vehicle_staff_ids.append(s.staff_id)
 
-    all_locations = list(depots.values()) + list(client_map.keys())
-   
-    loc_to_point = {}
-    for sc, idx in depots.items():
-        loc_to_point[idx] = point_idx[sc]
-        
-    for c_idx, order_id in client_map.items():
-        order = next(o for o in day.orders if o.order_id == order_id)
-        loc_to_point[c_idx] = point_idx[order.building_id]
+    # 5. Матрица расстояний и времени
+    for i, loc1 in enumerate(loc_objects):
+        for j, loc2 in enumerate(loc_objects):
+            if i == j: continue
+            p1 = point_idx[all_point_ids[i]]
+            p2 = point_idx[all_point_ids[j]]
+            m.add_edge(
+                loc1, loc2,
+                distance=matrix.distances_m[p1][p2],
+                duration=matrix.durations_sec[p1][p2]
+            )
 
-    for i in range(len(all_locations)):
-        for j in range(len(all_locations)):
-            frm = all_locations[i]
-            to = all_locations[j]
-            if frm == to: continue
-            
-            p1 = loc_to_point[frm]
-            p2 = loc_to_point[to]
-            
-            dur = matrix.durations_sec[p1][p2]
-            dist = matrix.distances_m[p1][p2]
-            
-            m.add_edge(frm, to, distance=dist, duration=dur)
-
+    # 6. Оптимизация
+    print(f"Запуск PyVRP: {len(day.orders)} заказов, {len(staff_list)} сотрудников.")
     res = m.solve(stop=MaxRuntime(10))
+    print(f"Решение найдено: {res.is_feasible()}")
     
+    # 7. Формирование ответа
     routes = []
+    visited_clients = set()
+    
     if res.is_feasible():
-        for v_idx, route in enumerate(res.best.routes()):
-            staff_id = vehicle_types[route.vehicle_type()]
-            sc_id = staff_list[v_idx].service_center_id
+        for route in res.best.routes():
+            v_type_idx = route.vehicle_type()
+            staff_id = vehicle_staff_ids[v_type_idx]
+            s_obj = next(s for s in staff_list if s.staff_id == staff_id)
             
             stops = []
             seq = 1
-           
-            stop_depot_start = {
-                "seq": seq, "type": "DEPOT_START", "location_id": sc_id,
-                "arrival": day.now, "start": day.now, "end": day.now
-            }
-            stops.append(stop_depot_start)
+            
+            # DEPOT_START
+            shift_start_time = datetime.strptime(s_obj.shift.start, "%H:%M").time()
+            shift_start_dt = datetime.combine(day.now.date(), shift_start_time, tzinfo=day.now.tzinfo)
+            # PyVRP хранит время начала маршрута в route.start_time
+            real_start_time = base_date + __import__('datetime').timedelta(seconds=route.start_time())
+            
+            stops.append(Stop(
+                seq=seq, type="DEPOT_START", location_id=s_obj.service_center_id,
+                arrival=real_start_time, start=real_start_time, end=real_start_time,
+                travel_sec=0, distance_m=0
+            ))
             seq += 1
             
-            for visit in route.visits():
-                o_id = client_map[visit.client()]
-                stops.append({
-                    "seq": seq, "type": "VISIT", "location_id": "B", "order_id": o_id,
-                    "arrival": day.now, "start": day.now, "end": day.now
-                })
+            # VISITS
+            for client_idx in route.clients():
+                visited_clients.add(client_idx)
+                o_id = client_order_ids[client_idx]
+                o_obj = next(o for o in day.orders if o.order_id == o_id)
+                
+                # Достаем реальное время из PyVRP
+                visit = route.get_client_visit(client_idx)
+                
+                # PyVRP считает время в секундах от начала. Переводим в datetime
+                real_arrival = base_date + __import__('datetime').timedelta(seconds=visit.start_time() - visit.service_duration())
+                real_start = base_date + __import__('datetime').timedelta(seconds=visit.start_time())
+                real_end = base_date + __import__('datetime').timedelta(seconds=visit.end_time())
+                
+                stops.append(Stop(
+                    seq=seq, type="VISIT", location_id=o_obj.building_id,
+                    order_id=o_id, arrival=real_arrival, start=real_start, end=real_end,
+                    travel_sec=0, distance_m=0
+                ))
                 seq += 1
                 
-            stops.append({
-                "seq": seq, "type": "DEPOT_END", "location_id": sc_id,
-                "arrival": day.now, "start": day.now, "end": day.now
-            })
+            # DEPOT_END
+            shift_end_time = datetime.strptime(s_obj.shift.end, "%H:%M").time()
+            shift_end_dt = datetime.combine(day.now.date(), shift_end_time, tzinfo=day.now.tzinfo)
+            real_end_time = base_date + __import__('datetime').timedelta(seconds=route.end_time())
             
-            routes.append({
-                "staff_id": staff_id, "service_center_id": sc_id,
-                "status": "ACTIVE", "stops": stops
-            })
+            stops.append(Stop(
+                seq=seq, type="DEPOT_END", location_id=s_obj.service_center_id,
+                arrival=real_end_time, start=real_end_time, end=real_end_time,
+                travel_sec=0, distance_m=0
+            ))
+            
+            routes.append(Route(
+                staff_id=staff_id, service_center_id=s_obj.service_center_id,
+                status="ACTIVE", stops=stops
+            ))
+
+    # Собираем нераспределенные заказы
+    unassigned = []
+    for i, o_id in enumerate(client_order_ids):
+        if i not in visited_clients:
+            unassigned.append(UnassignedOrder(
+                order_id=o_id,
+                reason_code="NO_QUALIFIED_STAFF",
+                reason_text="Не удалось уложиться в слот",
+                suggested_action="RESCHEDULE"
+            ))
 
     return Plan(
         date=day.date, plan_version=1, as_of=day.now,
-        routes=routes, unassigned=[], pgp_groups=[], cancelled=[], alerts=[]
+        routes=routes, unassigned=unassigned, pgp_groups=[], cancelled=[], alerts=[]
     )
