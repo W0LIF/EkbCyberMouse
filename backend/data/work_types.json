@@ -1,0 +1,38 @@
+[
+  {
+    "code": "INSTALL_PON",
+    "name": "Инсталляция PON",
+    "profile": "installation",
+    "requires_height": false,
+    "norm_minutes": 90,
+    "deadline_hours": null,
+    "deadline_days": 3
+  },
+  {
+    "code": "INSTALL_FTTB",
+    "name": "Инсталляция FTTB",
+    "profile": "installation",
+    "requires_height": false,
+    "norm_minutes": 60,
+    "deadline_hours": null,
+    "deadline_days": 3
+  },
+  {
+    "code": "FIX_PON",
+    "name": "Ремонт PON (3ЛТП)",
+    "profile": "3ltp",
+    "requires_height": true,
+    "norm_minutes": 45,
+    "deadline_hours": 4,
+    "deadline_days": null
+  },
+  {
+    "code": "FIX_FTTB",
+    "name": "Ремонт FTTB (3ЛТП)",
+    "profile": "3ltp",
+    "requires_height": true,
+    "norm_minutes": 40,
+    "deadline_hours": 4,
+    "deadline_days": null
+  }
+]
