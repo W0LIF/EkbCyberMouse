@@ -2,18 +2,27 @@ from api.app.models import TravelMatrix
 
 class MatrixStore:
     def __init__(self):
-        self.matrix: TravelMatrix | None = None
-        self.index_map: dict[str, int] = {}
+        self._matrix_id = None
+        self._points = []
+        self._durations = []
+        self._distances = []
+        self._index = {}
 
-    def store(self, matrix: TravelMatrix):
-        self.matrix = matrix
-        self.index_map = {point: i for i, point in enumerate(matrix.points)}
+    def store(self, matrix: TravelMatrix) -> None:
+        self._matrix_id = matrix.matrix_id
+        self._points = matrix.points
+        self._durations = matrix.durations_sec
+        self._distances = matrix.distances_m
+        self._index = {pid: i for i, pid in enumerate(self._points)}
 
     def get(self, from_id: str, to_id: str) -> tuple[int, int]:
-        if not self.matrix:
-            raise ValueError("Матрица не загружена")
-        i = self.index_map[from_id]
-        j = self.index_map[to_id]
-        return self.matrix.durations_sec[i][j], self.matrix.distances_m[i][j]
+        if from_id not in self._index or to_id not in self._index:
+            return 0, 0
+        i = self._index[from_id]
+        j = self._index[to_id]
+        return self._durations[i][j], self._distances[i][j]
+
+    def is_loaded(self) -> bool:
+        return self._matrix_id is not None
 
 matrix_store = MatrixStore()
