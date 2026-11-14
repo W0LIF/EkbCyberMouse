@@ -1,0 +1,10 @@
+/* ===== Rostelecom Dispatcher — Entry Point ===== */
+
+/* Шрифты */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&family=Manrope:wght@600;700;800&display=swap");
+
+/* 1. Дизайн-токены (белый / фиолетовый / оранжевый) */
+@import "./styles/tokens.css";
+
+/* 2. Глобальные стили (reset, компоненты, страницы, мобильные) */
+@import "./styles/global.css";
