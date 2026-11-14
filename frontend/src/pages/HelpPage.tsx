@@ -41,7 +41,7 @@ export default function HelpPage() {
         <div className="help-hero-search">
           <Search size={19} />
           <input placeholder="Введите вопрос или название функции…" />
-          <kbd>⌘ K</kbd>
+          <kbd>Ctrl + K</kbd>
         </div>
       </div>
       <div className="help-categories">

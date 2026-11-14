@@ -30,11 +30,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       <section className="login-brand">
         <div className="road-grid" />
         <div className="brand-center">
-          <div className="big-mark">
-            <i />
-            <i />
-            <i />
-          </div>
+          <img src="/rostel.png" alt="Ростелеком" className="brand-logo" />
+          <span className="brand-name">Ростелеком</span>
           <h1>
             Умная диспетчеризация
             <br />

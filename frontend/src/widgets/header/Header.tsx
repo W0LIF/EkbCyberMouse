@@ -20,7 +20,7 @@ export function Header({ onHelp }: HeaderProps) {
       <div className="global-search">
         <Search size={18} />
         <input placeholder="Поиск по наряду, адресу, сотруднику…" />
-        <kbd>⌘ K</kbd>
+        <kbd>Ctrl + K</kbd>
       </div>
       <div className="header-actions">
         <button className="date-button">
@@ -33,7 +33,7 @@ export function Header({ onHelp }: HeaderProps) {
             <Bell size={19} />
           </button>
         </Tooltip>
-        <Tooltip text="Помощь и горячие клавиши">
+        <Tooltip text="Помощь">
           <button className="icon-button" onClick={onHelp}>
             <HelpCircle size={19} />
           </button>
