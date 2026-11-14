@@ -47,7 +47,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
       <div className="side-head">
-        <Logo compact={collapsed} />
+        <Logo compact={collapsed} variant="dark" />
         <button onClick={onToggleCollapsed}>
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>

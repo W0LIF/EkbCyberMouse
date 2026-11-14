@@ -7,7 +7,7 @@ interface HelpPanelProps {
 }
 
 const shortcuts: ShortcutItem[] = [
-  { key: "⌘ K", label: "Глобальный поиск" },
+  { key: "Ctrl + K", label: "Глобальный поиск" },
   { key: "R", label: "Обновить план" },
   { key: "Esc", label: "Закрыть панель" },
   { key: "G", label: "Карта маршрутов" },

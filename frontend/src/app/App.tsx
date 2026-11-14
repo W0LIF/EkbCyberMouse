@@ -19,9 +19,10 @@ import SettingsPage from "../pages/SettingsPage";
 import HelpPage from "../pages/HelpPage";
 import LibraryPage from "../pages/LibraryPage";
 import MobileRoutePage from "../pages/MobileRoutePage";
+import { useAuth } from "../features/auth/AuthContext";
 
 export default function App() {
-  const [logged, setLogged] = useState(() => localStorage.getItem("rtk-auth") === "1");
+  const { logged, login, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [modal, setModal] = useState<ModalType>(null);
   const [help, setHelp] = useState(false);
@@ -37,26 +38,35 @@ export default function App() {
 
   useEffect(() => {
     function keys(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      const isTyping =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable;
+
       if (e.key === "Escape") {
         setModal(null);
         setHelp(false);
+        return;
       }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        const searchInput = document.querySelector<HTMLInputElement>(
+          ".global-search input",
+        );
+        searchInput?.focus();
+        return;
+      }
+
+      if (isTyping || e.ctrlKey || e.metaKey || e.altKey) return;
+
       if (e.key.toLowerCase() === "g") navigate("/map");
       if (e.key.toLowerCase() === "p") navigate("/plan");
     }
     window.addEventListener("keydown", keys);
     return () => window.removeEventListener("keydown", keys);
   }, [navigate]);
-
-  function login() {
-    localStorage.setItem("rtk-auth", "1");
-    setLogged(true);
-  }
-
-  function logout() {
-    localStorage.removeItem("rtk-auth");
-    setLogged(false);
-  }
 
   if (!logged) return <LoginPage onLogin={login} />;
   if (isMobile) return <MobileRoutePage logout={logout} />;
