@@ -1,38 +1,108 @@
 [
   {
-    "code": "INSTALL_PON",
-    "name": "Инсталляция PON",
-    "profile": "installation",
-    "requires_height": false,
-    "norm_minutes": 90,
-    "deadline_hours": null,
-    "deadline_days": 3
+    "code": "INST_PON_MKD",
+    "name": "Установка PON в МКД",
+    "profiles": [
+      "INSTALL"
+    ],
+    "duration_min": 90,
+    "max_start_delay_min": 10,
+    "deadline_kind": "WORKING_DAYS",
+    "deadline_value": 3,
+    "repeat_deadline_value": null,
+    "pgp_relevant": true
   },
   {
-    "code": "INSTALL_FTTB",
-    "name": "Инсталляция FTTB",
-    "profile": "installation",
-    "requires_height": false,
-    "norm_minutes": 60,
-    "deadline_hours": null,
-    "deadline_days": 3
+    "code": "INST_FTTB_MKD",
+    "name": "Установка FTTB в МКД",
+    "profiles": [
+      "INSTALL"
+    ],
+    "duration_min": 90,
+    "max_start_delay_min": 10,
+    "deadline_kind": "WORKING_DAYS",
+    "deadline_value": 3,
+    "repeat_deadline_value": null,
+    "pgp_relevant": true
   },
   {
-    "code": "FIX_PON",
-    "name": "Ремонт PON (3ЛТП)",
-    "profile": "3ltp",
-    "requires_height": true,
-    "norm_minutes": 45,
-    "deadline_hours": 4,
-    "deadline_days": null
+    "code": "INST_PRIVATE_VLS",
+    "name": "Установка в частном доме",
+    "profiles": [
+      "INSTALL"
+    ],
+    "duration_min": 120,
+    "max_start_delay_min": 10,
+    "deadline_kind": "WORKING_DAYS",
+    "deadline_value": 5,
+    "repeat_deadline_value": null,
+    "pgp_relevant": false
   },
   {
-    "code": "FIX_FTTB",
-    "name": "Ремонт FTTB (3ЛТП)",
-    "profile": "3ltp",
-    "requires_height": true,
-    "norm_minutes": 40,
-    "deadline_hours": 4,
-    "deadline_days": null
+    "code": "ADD_SERVICE",
+    "name": "Доп. услуга",
+    "profiles": [
+      "INSTALL"
+    ],
+    "duration_min": 40,
+    "max_start_delay_min": 10,
+    "deadline_kind": "HOURS",
+    "deadline_value": 1,
+    "repeat_deadline_value": null,
+    "pgp_relevant": false
+  },
+  {
+    "code": "SURVEY_PRIVATE",
+    "name": "Обследование",
+    "profiles": [
+      "INSTALL"
+    ],
+    "duration_min": 60,
+    "max_start_delay_min": 10,
+    "deadline_kind": "WORKING_DAYS",
+    "deadline_value": 2,
+    "repeat_deadline_value": null,
+    "pgp_relevant": false
+  },
+  {
+    "code": "REPAIR",
+    "name": "Ремонт",
+    "profiles": [
+      "INSTALL",
+      "LTP3"
+    ],
+    "duration_min": 90,
+    "max_start_delay_min": null,
+    "deadline_kind": "HOURS",
+    "deadline_value": 24,
+    "repeat_deadline_value": null,
+    "pgp_relevant": false
+  },
+  {
+    "code": "DEGRADATION",
+    "name": "Деградация",
+    "profiles": [
+      "INSTALL",
+      "LTP3"
+    ],
+    "duration_min": 90,
+    "max_start_delay_min": null,
+    "deadline_kind": "HOURS",
+    "deadline_value": 24,
+    "repeat_deadline_value": null,
+    "pgp_relevant": false
+  },
+  {
+    "code": "DISMANTLE",
+    "name": "Демонтаж",
+    "profiles": [
+      "INSTALL"
+    ],
+    "duration_min": 60,
+    "max_start_delay_min": null,
+    "deadline_kind": "WORKING_DAYS",
+    "deadline_value": 5,
+    "repeat_deadline_value": null,
+    "pgp_relevant": false
   }
 ]

@@ -83,7 +83,7 @@ def generate_simple_data():
 
 def main():
     data = generate_simple_data()
-    with httpx.Client(timeout=60.0) as client:
+    with httpx.Client(timeout=300.0) as client:
         print("1. Загрузка справочников...")
         resp = client.put(f"{BASE_URL}/reference", json=data["reference"])
         print("Ответ:", resp.status_code, resp.text)

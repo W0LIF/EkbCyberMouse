@@ -1,23 +1,22 @@
 from sqlalchemy import text
-from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.dialects.postgresql import insert
+from api.app.models import ReferenceData, Staff, ServiceCenter, AccessNode, WorkType, Building
+import json
 
-from api.app.models import ReferenceData, Staff, ServiceCenter, AccessNode, WorkType
-from api.app.repositories.db import AsyncSessionLocal
-# Для SQLAlchemy нам нужны ORM-модели. Пока используем Core-подход через text() для простоты,
-# но лучше создать orm.py. Для скорости напишем через Core-запросы.
+def _parse_json(val):
+    """PostgreSQL возвращает JSONB как строку, Pydantic ждет dict."""
+    if isinstance(val, str):
+        return json.loads(val)
+    return val
 
 class SqlReferenceRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
     async def replace_all(self, data: ReferenceData) -> None:
-        """Полностью заменяет справочники (вызывается при PUT /reference)."""
-        # 1. Очищаем старые данные (каскадно затронет orders, так как там FK)
+        """Полностью заменяет справочники."""
         await self.session.execute(text("TRUNCATE TABLE service_centers, staff, access_nodes, buildings, work_types CASCADE;"))
         
-        # 2. Вставляем СЦ
         for sc in data.service_centers:
             await self.session.execute(
                 text("""
@@ -28,7 +27,6 @@ class SqlReferenceRepo:
                  "oh": sc.opening_hours.model_dump_json(), "rd": sc.restock_duration_min}
             )
             
-        # 3. Вставляем WorkTypes
         for wt in data.work_types:
             await self.session.execute(
                 text("""
@@ -40,7 +38,6 @@ class SqlReferenceRepo:
                  "rdv": wt.repeat_deadline_value, "pgp": wt.pgp_relevant}
             )
 
-        # 4. Вставляем Staff
         for s in data.staff:
             await self.session.execute(
                 text("""
@@ -52,7 +49,6 @@ class SqlReferenceRepo:
                  "eq_start": s.equipment_start.model_dump_json(), "eq_cap": s.equipment_capacity.model_dump_json(), "exp": s.experience_years}
             )
 
-        # 5. Вставляем узлы и дома
         for node in data.access_nodes:
             await self.session.execute(
                 text("""
@@ -62,7 +58,6 @@ class SqlReferenceRepo:
                 {"id": node.access_node_id, "type": node.node_type, "tech": node.technology, "name": node.name, "addr": node.address, "lat": node.lat, "lon": node.lon}
             )
             for b in node.buildings:
-                # Используем ON CONFLICT, так как дом может быть в нескольких узлах
                 await self.session.execute(
                     text("""
                         INSERT INTO buildings (building_id, address, lat, lon, building_type, overhead_line, zone_service_center_id)
@@ -79,14 +74,55 @@ class SqlReferenceRepo:
         await self.session.commit()
 
     async def get_staff(self) -> list[Staff]:
-        # ... (остальные методы get_ можно дописать позже, для MVP достаточно загрузки)
-        pass
+        res = await self.session.execute(text("SELECT * FROM staff"))
+        staff = []
+        for row in res.mappings():
+            d = dict(row)
+            d["shift"] = _parse_json(d["shift"])
+            d["equipment_start"] = _parse_json(d["equipment_start"])
+            d["equipment_capacity"] = _parse_json(d["equipment_capacity"])
+            staff.append(Staff(**d))
+        return staff
+
+    async def get_staff_by_id(self, staff_id: str) -> Staff | None:
+        res = await self.session.execute(text("SELECT * FROM staff WHERE staff_id = :id"), {"id": staff_id})
+        row = res.mappings().first()
+        if row:
+            d = dict(row)
+            d["shift"] = _parse_json(d["shift"])
+            d["equipment_start"] = _parse_json(d["equipment_start"])
+            d["equipment_capacity"] = _parse_json(d["equipment_capacity"])
+            return Staff(**d)
+        return None
 
     async def get_work_types(self) -> list[WorkType]:
-        pass
-        
+        res = await self.session.execute(text("SELECT * FROM work_types"))
+        return [WorkType(**row) for row in res.mappings()]
+
+    async def get_work_type_by_code(self, code: str) -> WorkType | None:
+        res = await self.session.execute(text("SELECT * FROM work_types WHERE code = :code"), {"code": code})
+        row = res.mappings().first()
+        return WorkType(**row) if row else None
+
     async def get_service_centers(self) -> list[ServiceCenter]:
-        pass
-        
+        res = await self.session.execute(text("SELECT * FROM service_centers"))
+        centers = []
+        for row in res.mappings():
+            d = dict(row)
+            d["opening_hours"] = _parse_json(d["opening_hours"])
+            centers.append(ServiceCenter(**d))
+        return centers
+
     async def get_access_nodes(self) -> list[AccessNode]:
-        pass
+        nodes_res = await self.session.execute(text("SELECT * FROM access_nodes"))
+        nodes = []
+        for node_row in nodes_res.mappings():
+            node_dict = dict(node_row)
+            bldg_res = await self.session.execute(text("""
+                SELECT b.* FROM buildings b
+                JOIN access_node_buildings ab ON b.building_id = ab.building_id
+                WHERE ab.access_node_id = :nid
+            """), {"nid": node_dict["access_node_id"]})
+            node_dict["buildings"] = [Building(**b) for b in bldg_res.mappings()]
+            nodes.append(AccessNode(**node_dict))
+        return nodes

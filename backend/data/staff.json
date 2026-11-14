@@ -1,31 +1,29 @@
 [
   {
-<<<<<<< HEAD
     "staff_id": "ST-001",
     "display_name": "Сотрудник 001",
-    "service_center_id": "SC-02",
+    "service_center_id": "SC-01",
     "profiles": [
       "INSTALL"
     ],
     "technologies": [
       "XDSL",
       "PON",
-      "FTTB",
-      "DOCSIS"
+      "FTTB"
     ],
     "height_permit": true,
     "shift": {
-      "start": "09:00",
-      "end": "18:00",
+      "start": "12:00",
+      "end": "21:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
-        "to": "15:00"
+        "from": "16:00",
+        "to": "18:00"
       }
     },
     "equipment_start": {
-      "ONT": 0,
-      "ROUTER": 1,
+      "ONT": 2,
+      "ROUTER": 2,
       "STB": 2
     },
     "equipment_capacity": {
@@ -33,41 +31,41 @@
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 7.0
+    "experience_years": 4.7
   },
   {
     "staff_id": "ST-002",
     "display_name": "Сотрудник 002",
-    "service_center_id": "SC-02",
+    "service_center_id": "SC-01",
     "profiles": [
       "INSTALL"
     ],
     "technologies": [
       "FTTB",
-      "PON",
-      "XDSL"
+      "DOCSIS",
+      "PON"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
-      "start": "12:00",
-      "end": "21:00",
+      "start": "09:00",
+      "end": "18:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "15:00",
-        "to": "18:00"
+        "from": "13:00",
+        "to": "15:00"
       }
     },
     "equipment_start": {
-      "ONT": 3,
+      "ONT": 2,
       "ROUTER": 2,
-      "STB": 0
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 2.6
+    "experience_years": 7.1
   },
   {
     "staff_id": "ST-003",
@@ -77,368 +75,22 @@
       "INSTALL"
     ],
     "technologies": [
-      "XDSL",
-      "PON",
-      "DOCSIS"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 2,
-      "ROUTER": 3,
-      "STB": 1
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 9.2
-  },
-  {
-    "staff_id": "ST-004",
-    "display_name": "Сотрудник 004",
-    "service_center_id": "SC-01",
-    "profiles": [
-      "INSTALL"
-    ],
-    "technologies": [
-      "XDSL",
-      "PON",
-      "FTTB",
-      "DOCSIS"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "12:00",
-      "end": "21:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "15:00",
-        "to": "18:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 1,
-      "ROUTER": 3,
-      "STB": 2
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 4.1
-  },
-  {
-    "staff_id": "ST-005",
-    "display_name": "Сотрудник 005",
-    "service_center_id": "SC-01",
-    "profiles": [
-      "INSTALL"
-    ],
-    "technologies": [
-      "XDSL",
-      "FTTB",
-      "PON",
-      "DOCSIS"
-    ],
-    "height_permit": true,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 2,
-      "ROUTER": 3,
-      "STB": 1
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 8.9
-  },
-  {
-    "staff_id": "ST-006",
-    "display_name": "Сотрудник 006",
-    "service_center_id": "SC-02",
-    "profiles": [
-      "INSTALL"
-    ],
-    "technologies": [
-      "FTTB",
       "PON",
       "XDSL"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
-      "start": "09:00",
-      "end": "18:00",
+      "start": "08:00",
+      "end": "17:00",
       "break_duration_min": 60,
       "break_window": {
         "from": "12:00",
-        "to": "15:00"
+        "to": "14:00"
       }
     },
     "equipment_start": {
       "ONT": 2,
-      "ROUTER": 1,
-      "STB": 0
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 2.3
-  },
-  {
-    "staff_id": "ST-007",
-    "display_name": "Сотрудник 007",
-    "service_center_id": "SC-01",
-    "profiles": [
-      "INSTALL"
-    ],
-    "technologies": [
-      "FTTB",
-      "DOCSIS",
-      "XDSL",
-      "PON"
-    ],
-    "height_permit": true,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 3,
-      "ROUTER": 3,
-      "STB": 0
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 6.1
-  },
-  {
-    "staff_id": "ST-008",
-    "display_name": "Сотрудник 008",
-    "service_center_id": "SC-04",
-    "profiles": [
-      "INSTALL"
-    ],
-    "technologies": [
-      "FTTB",
-      "PON"
-    ],
-    "height_permit": true,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 1,
-      "ROUTER": 1,
-      "STB": 2
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 5.4
-  },
-  {
-    "staff_id": "ST-009",
-    "display_name": "Сотрудник 009",
-    "service_center_id": "SC-02",
-    "profiles": [
-      "INSTALL"
-    ],
-    "technologies": [
-      "FTTB",
-      "DOCSIS"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "12:00",
-      "end": "21:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "15:00",
-        "to": "18:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 3,
-      "ROUTER": 0,
-      "STB": 2
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 7.4
-  },
-  {
-    "staff_id": "ST-010",
-    "display_name": "Сотрудник 010",
-    "service_center_id": "SC-01",
-    "profiles": [
-      "INSTALL"
-    ],
-    "technologies": [
-      "DOCSIS",
-      "XDSL"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "12:00",
-      "end": "21:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "15:00",
-        "to": "18:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 3,
-      "ROUTER": 1,
-      "STB": 0
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 8.4
-  },
-  {
-    "staff_id": "ST-011",
-    "display_name": "Сотрудник 011",
-    "service_center_id": "SC-05",
-    "profiles": [
-      "INSTALL"
-    ],
-    "technologies": [
-      "XDSL",
-      "PON"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 2,
-      "ROUTER": 3,
-      "STB": 2
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 6.1
-  },
-  {
-    "staff_id": "ST-012",
-    "display_name": "Сотрудник 012",
-    "service_center_id": "SC-04",
-    "profiles": [
-      "INSTALL"
-    ],
-=======
-    "id": "STAFF-001",
-    "service_center_id": "SC-1",
-    "profile": "installation",
->>>>>>> 025859cfced6bf58bc338dde4dd5a7f3f0e8116f
-    "technologies": [
-      "PON",
-      "DOCSIS"
-    ],
-<<<<<<< HEAD
-    "height_permit": true,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 3,
-      "ROUTER": 1,
-      "STB": 2
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 1.4
-  },
-  {
-    "staff_id": "ST-013",
-    "display_name": "Сотрудник 013",
-    "service_center_id": "SC-05",
-    "profiles": [
-      "LTP3"
-    ],
-    "technologies": [
-      "PON",
-      "XDSL",
-      "DOCSIS",
-      "FTTB"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 3,
-      "ROUTER": 1,
+      "ROUTER": 2,
       "STB": 2
     },
     "equipment_capacity": {
@@ -449,50 +101,17 @@
     "experience_years": 5.6
   },
   {
-    "staff_id": "ST-014",
-    "display_name": "Сотрудник 014",
-    "service_center_id": "SC-04",
+    "staff_id": "ST-004",
+    "display_name": "Сотрудник 004",
+    "service_center_id": "SC-01",
     "profiles": [
       "LTP3"
     ],
     "technologies": [
-      "DOCSIS",
       "FTTB",
+      "XDSL",
       "PON",
-      "XDSL"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 1,
-      "ROUTER": 3,
-      "STB": 1
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 3.8
-  },
-  {
-    "staff_id": "ST-015",
-    "display_name": "Сотрудник 015",
-    "service_center_id": "SC-05",
-    "profiles": [
-      "LTP3"
-    ],
-    "technologies": [
-      "DOCSIS",
-      "PON"
+      "DOCSIS"
     ],
     "height_permit": false,
     "shift": {
@@ -500,48 +119,13 @@
       "end": "21:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "15:00",
+        "from": "16:00",
         "to": "18:00"
       }
     },
     "equipment_start": {
       "ONT": 2,
-      "ROUTER": 3,
-      "STB": 0
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 9.1
-  },
-  {
-    "staff_id": "ST-016",
-    "display_name": "Сотрудник 016",
-    "service_center_id": "SC-05",
-    "profiles": [
-      "LTP3"
-    ],
-    "technologies": [
-      "DOCSIS",
-      "FTTB",
-      "PON",
-      "XDSL"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 0,
-      "ROUTER": 0,
+      "ROUTER": 2,
       "STB": 2
     },
     "equipment_capacity": {
@@ -549,87 +133,224 @@
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 0.6
+    "experience_years": 4.5
   },
   {
-    "staff_id": "ST-017",
-    "display_name": "Сотрудник 017",
-    "service_center_id": "SC-03",
+    "staff_id": "ST-005",
+    "display_name": "Сотрудник 005",
+    "service_center_id": "SC-01",
     "profiles": [
-      "LTP3"
+      "INSTALL"
     ],
     "technologies": [
+      "DOCSIS",
       "XDSL",
       "PON",
-      "DOCSIS"
+      "FTTB"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
       "start": "09:00",
       "end": "18:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
+        "from": "13:00",
         "to": "15:00"
       }
     },
     "equipment_start": {
-      "ONT": 3,
+      "ONT": 2,
       "ROUTER": 2,
-      "STB": 1
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 8.6
+    "experience_years": 4.3
   },
   {
-    "staff_id": "ST-018",
-    "display_name": "Сотрудник 018",
-    "service_center_id": "SC-03",
+    "staff_id": "ST-006",
+    "display_name": "Сотрудник 006",
+    "service_center_id": "SC-01",
     "profiles": [
-      "LTP3"
+      "INSTALL"
     ],
     "technologies": [
+      "PON",
       "XDSL",
       "DOCSIS",
+      "FTTB"
+    ],
+    "height_permit": false,
+    "shift": {
+      "start": "08:00",
+      "end": "17:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "12:00",
+        "to": "14:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 4.8
+  },
+  {
+    "staff_id": "ST-007",
+    "display_name": "Сотрудник 007",
+    "service_center_id": "SC-01",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
       "FTTB",
       "PON"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
-      "start": "09:00",
-      "end": "18:00",
+      "start": "12:00",
+      "end": "21:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
-        "to": "15:00"
+        "from": "16:00",
+        "to": "18:00"
       }
     },
     "equipment_start": {
-      "ONT": 3,
-      "ROUTER": 3,
-      "STB": 0
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 4.0
+    "experience_years": 4.5
   },
   {
-    "staff_id": "ST-019",
-    "display_name": "Сотрудник 019",
-    "service_center_id": "SC-03",
+    "staff_id": "ST-008",
+    "display_name": "Сотрудник 008",
+    "service_center_id": "SC-01",
     "profiles": [
       "LTP3"
     ],
     "technologies": [
-      "XDSL",
       "DOCSIS",
+      "PON",
+      "XDSL",
+      "FTTB"
+    ],
+    "height_permit": true,
+    "shift": {
+      "start": "09:00",
+      "end": "18:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "13:00",
+        "to": "15:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 7.4
+  },
+  {
+    "staff_id": "ST-009",
+    "display_name": "Сотрудник 009",
+    "service_center_id": "SC-02",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "PON",
+      "FTTB"
+    ],
+    "height_permit": false,
+    "shift": {
+      "start": "08:00",
+      "end": "17:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "12:00",
+        "to": "14:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 5.7
+  },
+  {
+    "staff_id": "ST-010",
+    "display_name": "Сотрудник 010",
+    "service_center_id": "SC-02",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "DOCSIS",
+      "PON",
+      "FTTB"
+    ],
+    "height_permit": true,
+    "shift": {
+      "start": "12:00",
+      "end": "21:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "16:00",
+        "to": "18:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 1.9
+  },
+  {
+    "staff_id": "ST-011",
+    "display_name": "Сотрудник 011",
+    "service_center_id": "SC-02",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "PON",
+      "DOCSIS",
+      "XDSL",
       "FTTB"
     ],
     "height_permit": false,
@@ -638,13 +359,13 @@
       "end": "18:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
+        "from": "13:00",
         "to": "15:00"
       }
     },
     "equipment_start": {
-      "ONT": 1,
-      "ROUTER": 0,
+      "ONT": 2,
+      "ROUTER": 2,
       "STB": 2
     },
     "equipment_capacity": {
@@ -652,31 +373,65 @@
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 2.7
+    "experience_years": 8.9
   },
   {
-    "staff_id": "ST-020",
-    "display_name": "Сотрудник 020",
+    "staff_id": "ST-012",
+    "display_name": "Сотрудник 012",
     "service_center_id": "SC-02",
     "profiles": [
       "LTP3"
     ],
     "technologies": [
+      "XDSL",
       "FTTB",
-      "XDSL"
+      "DOCSIS"
     ],
     "height_permit": false,
+    "shift": {
+      "start": "08:00",
+      "end": "17:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "12:00",
+        "to": "14:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 5.0
+  },
+  {
+    "staff_id": "ST-013",
+    "display_name": "Сотрудник 013",
+    "service_center_id": "SC-02",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "XDSL",
+      "FTTB"
+    ],
+    "height_permit": true,
     "shift": {
       "start": "12:00",
       "end": "21:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "15:00",
+        "from": "16:00",
         "to": "18:00"
       }
     },
     "equipment_start": {
-      "ONT": 3,
+      "ONT": 2,
       "ROUTER": 2,
       "STB": 2
     },
@@ -688,14 +443,16 @@
     "experience_years": 6.3
   },
   {
-    "staff_id": "ST-021",
-    "display_name": "Сотрудник 021",
-    "service_center_id": "SC-01",
+    "staff_id": "ST-014",
+    "display_name": "Сотрудник 014",
+    "service_center_id": "SC-02",
     "profiles": [
-      "LTP3"
+      "INSTALL"
     ],
     "technologies": [
       "DOCSIS",
+      "PON",
+      "FTTB",
       "XDSL"
     ],
     "height_permit": false,
@@ -704,46 +461,13 @@
       "end": "18:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 0,
-      "ROUTER": 0,
-      "STB": 0
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 5.0
-  },
-  {
-    "staff_id": "ST-022",
-    "display_name": "Сотрудник 022",
-    "service_center_id": "SC-01",
-    "profiles": [
-      "LTP3"
-    ],
-    "technologies": [
-      "XDSL",
-      "PON"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
+        "from": "13:00",
         "to": "15:00"
       }
     },
     "equipment_start": {
       "ONT": 2,
-      "ROUTER": 0,
+      "ROUTER": 2,
       "STB": 2
     },
     "equipment_capacity": {
@@ -751,53 +475,86 @@
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 0.9
+    "experience_years": 1.0
   },
   {
-    "staff_id": "ST-023",
-    "display_name": "Сотрудник 023",
-    "service_center_id": "SC-04",
+    "staff_id": "ST-015",
+    "display_name": "Сотрудник 015",
+    "service_center_id": "SC-02",
     "profiles": [
-      "LTP3"
+      "INSTALL"
     ],
     "technologies": [
       "XDSL",
-      "DOCSIS",
-      "PON",
-      "FTTB"
+      "FTTB",
+      "PON"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
-      "start": "09:00",
-      "end": "18:00",
+      "start": "08:00",
+      "end": "17:00",
       "break_duration_min": 60,
       "break_window": {
         "from": "12:00",
-        "to": "15:00"
+        "to": "14:00"
       }
     },
     "equipment_start": {
-      "ONT": 3,
-      "ROUTER": 3,
-      "STB": 0
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 2.4
+    "experience_years": 8.0
   },
   {
-    "staff_id": "ST-024",
-    "display_name": "Сотрудник 024",
-    "service_center_id": "SC-05",
+    "staff_id": "ST-016",
+    "display_name": "Сотрудник 016",
+    "service_center_id": "SC-02",
     "profiles": [
       "LTP3"
     ],
     "technologies": [
+      "XDSL",
       "FTTB",
-      "PON",
+      "PON"
+    ],
+    "height_permit": false,
+    "shift": {
+      "start": "12:00",
+      "end": "21:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "16:00",
+        "to": "18:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 2.7
+  },
+  {
+    "staff_id": "ST-017",
+    "display_name": "Сотрудник 017",
+    "service_center_id": "SC-03",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "DOCSIS",
+      "FTTB",
       "XDSL"
     ],
     "height_permit": false,
@@ -806,47 +563,218 @@
       "end": "18:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
+        "from": "13:00",
         "to": "15:00"
       }
     },
     "equipment_start": {
-      "ONT": 1,
-      "ROUTER": 0,
-      "STB": 1
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 2.8
+    "experience_years": 6.2
   },
   {
-    "staff_id": "ST-025",
-    "display_name": "Сотрудник 025",
-    "service_center_id": "SC-02",
+    "staff_id": "ST-018",
+    "display_name": "Сотрудник 018",
+    "service_center_id": "SC-03",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "FTTB",
+      "DOCSIS"
+    ],
+    "height_permit": true,
+    "shift": {
+      "start": "08:00",
+      "end": "17:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "12:00",
+        "to": "14:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 8.3
+  },
+  {
+    "staff_id": "ST-019",
+    "display_name": "Сотрудник 019",
+    "service_center_id": "SC-03",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "DOCSIS",
+      "XDSL",
+      "FTTB",
+      "PON"
+    ],
+    "height_permit": false,
+    "shift": {
+      "start": "12:00",
+      "end": "21:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "16:00",
+        "to": "18:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 2.0
+  },
+  {
+    "staff_id": "ST-020",
+    "display_name": "Сотрудник 020",
+    "service_center_id": "SC-03",
     "profiles": [
       "LTP3"
     ],
     "technologies": [
-      "XDSL",
-      "FTTB"
+      "DOCSIS",
+      "PON",
+      "XDSL"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
       "start": "09:00",
       "end": "18:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
+        "from": "13:00",
         "to": "15:00"
       }
     },
     "equipment_start": {
       "ONT": 2,
-      "ROUTER": 3,
-      "STB": 1
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 8.8
+  },
+  {
+    "staff_id": "ST-021",
+    "display_name": "Сотрудник 021",
+    "service_center_id": "SC-03",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "PON",
+      "DOCSIS"
+    ],
+    "height_permit": true,
+    "shift": {
+      "start": "08:00",
+      "end": "17:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "12:00",
+        "to": "14:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 1.0
+  },
+  {
+    "staff_id": "ST-022",
+    "display_name": "Сотрудник 022",
+    "service_center_id": "SC-03",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "FTTB",
+      "DOCSIS",
+      "XDSL"
+    ],
+    "height_permit": false,
+    "shift": {
+      "start": "12:00",
+      "end": "21:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "16:00",
+        "to": "18:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 5.3
+  },
+  {
+    "staff_id": "ST-023",
+    "display_name": "Сотрудник 023",
+    "service_center_id": "SC-03",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "PON",
+      "XDSL",
+      "DOCSIS",
+      "FTTB"
+    ],
+    "height_permit": true,
+    "shift": {
+      "start": "09:00",
+      "end": "18:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "13:00",
+        "to": "15:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
@@ -856,30 +784,201 @@
     "experience_years": 6.1
   },
   {
-    "staff_id": "ST-026",
-    "display_name": "Сотрудник 026",
-    "service_center_id": "SC-01",
+    "staff_id": "ST-024",
+    "display_name": "Сотрудник 024",
+    "service_center_id": "SC-03",
     "profiles": [
       "LTP3"
     ],
     "technologies": [
+      "DOCSIS",
+      "XDSL"
+    ],
+    "height_permit": false,
+    "shift": {
+      "start": "08:00",
+      "end": "17:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "12:00",
+        "to": "14:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 3.8
+  },
+  {
+    "staff_id": "ST-025",
+    "display_name": "Сотрудник 025",
+    "service_center_id": "SC-04",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "PON",
+      "FTTB",
+      "DOCSIS"
+    ],
+    "height_permit": true,
+    "shift": {
+      "start": "12:00",
+      "end": "21:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "16:00",
+        "to": "18:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 2.0
+  },
+  {
+    "staff_id": "ST-026",
+    "display_name": "Сотрудник 026",
+    "service_center_id": "SC-04",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "FTTB",
+      "PON",
       "XDSL",
       "DOCSIS"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
       "start": "09:00",
       "end": "18:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
+        "from": "13:00",
         "to": "15:00"
       }
     },
     "equipment_start": {
       "ONT": 2,
       "ROUTER": 2,
-      "STB": 1
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 4.4
+  },
+  {
+    "staff_id": "ST-027",
+    "display_name": "Сотрудник 027",
+    "service_center_id": "SC-04",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "PON",
+      "FTTB"
+    ],
+    "height_permit": false,
+    "shift": {
+      "start": "08:00",
+      "end": "17:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "12:00",
+        "to": "14:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 6.7
+  },
+  {
+    "staff_id": "ST-028",
+    "display_name": "Сотрудник 028",
+    "service_center_id": "SC-04",
+    "profiles": [
+      "LTP3"
+    ],
+    "technologies": [
+      "PON",
+      "DOCSIS",
+      "FTTB",
+      "XDSL"
+    ],
+    "height_permit": false,
+    "shift": {
+      "start": "12:00",
+      "end": "21:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "16:00",
+        "to": "18:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 7.2
+  },
+  {
+    "staff_id": "ST-029",
+    "display_name": "Сотрудник 029",
+    "service_center_id": "SC-04",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "DOCSIS",
+      "FTTB",
+      "XDSL"
+    ],
+    "height_permit": true,
+    "shift": {
+      "start": "09:00",
+      "end": "18:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "13:00",
+        "to": "15:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
@@ -889,30 +988,30 @@
     "experience_years": 2.6
   },
   {
-    "staff_id": "ST-027",
-    "display_name": "Сотрудник 027",
+    "staff_id": "ST-030",
+    "display_name": "Сотрудник 030",
     "service_center_id": "SC-04",
     "profiles": [
-      "LTP3"
+      "INSTALL"
     ],
     "technologies": [
-      "PON",
-      "FTTB",
-      "DOCSIS"
+      "DOCSIS",
+      "XDSL",
+      "PON"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
-      "start": "12:00",
-      "end": "21:00",
+      "start": "08:00",
+      "end": "17:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "15:00",
-        "to": "18:00"
+        "from": "12:00",
+        "to": "14:00"
       }
     },
     "equipment_start": {
-      "ONT": 3,
-      "ROUTER": 0,
+      "ONT": 2,
+      "ROUTER": 2,
       "STB": 2
     },
     "equipment_capacity": {
@@ -920,121 +1019,51 @@
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 1.2
+    "experience_years": 10.0
   },
   {
-    "staff_id": "ST-028",
-    "display_name": "Сотрудник 028",
-    "service_center_id": "SC-01",
+    "staff_id": "ST-031",
+    "display_name": "Сотрудник 031",
+    "service_center_id": "SC-04",
     "profiles": [
-      "LTP3"
+      "INSTALL"
     ],
     "technologies": [
       "XDSL",
-      "DOCSIS",
       "FTTB",
       "PON"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
-      "start": "09:00",
-      "end": "18:00",
+      "start": "12:00",
+      "end": "21:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
-        "to": "15:00"
+        "from": "16:00",
+        "to": "18:00"
       }
     },
     "equipment_start": {
-      "ONT": 3,
-      "ROUTER": 3,
-      "STB": 0
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 7.7
+    "experience_years": 3.7
   },
   {
-    "staff_id": "ST-029",
-    "display_name": "Сотрудник 029",
+    "staff_id": "ST-032",
+    "display_name": "Сотрудник 032",
     "service_center_id": "SC-04",
     "profiles": [
       "LTP3"
     ],
     "technologies": [
-      "DOCSIS",
       "XDSL",
-      "PON",
-      "FTTB"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "12:00",
-      "end": "21:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "15:00",
-        "to": "18:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 0,
-      "ROUTER": 2,
-      "STB": 0
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 4.1
-  },
-  {
-    "staff_id": "ST-030",
-    "display_name": "Сотрудник 030",
-    "service_center_id": "SC-02",
-    "profiles": [
-      "LTP3"
-    ],
-    "technologies": [
-      "FTTB",
-      "DOCSIS",
-      "XDSL",
-      "PON"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "12:00",
-      "end": "21:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "15:00",
-        "to": "18:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 0,
-      "ROUTER": 2,
-      "STB": 0
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 3.2
-  },
-  {
-    "staff_id": "ST-031",
-    "display_name": "Сотрудник 031",
-    "service_center_id": "SC-03",
-    "profiles": [
-      "LTP3"
-    ],
-    "technologies": [
       "FTTB",
       "DOCSIS"
     ],
@@ -1044,81 +1073,48 @@
       "end": "18:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
+        "from": "13:00",
         "to": "15:00"
       }
     },
     "equipment_start": {
       "ONT": 2,
       "ROUTER": 2,
-      "STB": 0
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 9.0
-  },
-  {
-    "staff_id": "ST-032",
-    "display_name": "Сотрудник 032",
-    "service_center_id": "SC-02",
-    "profiles": [
-      "LTP3"
-    ],
-    "technologies": [
-      "FTTB",
-      "PON",
-      "XDSL"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 2,
-      "ROUTER": 1,
-      "STB": 0
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 2.4
+    "experience_years": 9.5
   },
   {
     "staff_id": "ST-033",
     "display_name": "Сотрудник 033",
     "service_center_id": "SC-05",
     "profiles": [
-      "LTP3"
+      "INSTALL"
     ],
     "technologies": [
-      "FTTB",
+      "XDSL",
       "PON",
-      "XDSL"
+      "DOCSIS",
+      "FTTB"
     ],
     "height_permit": false,
     "shift": {
-      "start": "09:00",
-      "end": "18:00",
+      "start": "08:00",
+      "end": "17:00",
       "break_duration_min": 60,
       "break_window": {
         "from": "12:00",
-        "to": "15:00"
+        "to": "14:00"
       }
     },
     "equipment_start": {
-      "ONT": 0,
-      "ROUTER": 3,
+      "ONT": 2,
+      "ROUTER": 2,
       "STB": 2
     },
     "equipment_capacity": {
@@ -1126,19 +1122,20 @@
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 0.6
+    "experience_years": 8.2
   },
   {
     "staff_id": "ST-034",
     "display_name": "Сотрудник 034",
-    "service_center_id": "SC-01",
+    "service_center_id": "SC-05",
     "profiles": [
-      "LTP3"
+      "INSTALL"
     ],
     "technologies": [
-      "XDSL",
       "DOCSIS",
-      "FTTB"
+      "XDSL",
+      "FTTB",
+      "PON"
     ],
     "height_permit": false,
     "shift": {
@@ -1146,80 +1143,46 @@
       "end": "21:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "15:00",
+        "from": "16:00",
         "to": "18:00"
       }
     },
     "equipment_start": {
-      "ONT": 3,
+      "ONT": 2,
       "ROUTER": 2,
-      "STB": 1
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 2.2
+    "experience_years": 6.7
   },
   {
     "staff_id": "ST-035",
     "display_name": "Сотрудник 035",
     "service_center_id": "SC-05",
     "profiles": [
-      "LTP3"
+      "INSTALL"
     ],
     "technologies": [
-      "DOCSIS",
-      "PON",
-      "XDSL"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "12:00",
-      "end": "21:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "15:00",
-        "to": "18:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 0,
-      "ROUTER": 3,
-      "STB": 1
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 9.4
-  },
-  {
-    "staff_id": "ST-036",
-    "display_name": "Сотрудник 036",
-    "service_center_id": "SC-03",
-    "profiles": [
-      "LTP3"
-    ],
-    "technologies": [
+      "XDSL",
       "FTTB",
-      "DOCSIS",
-      "PON"
+      "DOCSIS"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
       "start": "09:00",
       "end": "18:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
+        "from": "13:00",
         "to": "15:00"
       }
     },
     "equipment_start": {
-      "ONT": 3,
+      "ONT": 2,
       "ROUTER": 2,
       "STB": 2
     },
@@ -1228,17 +1191,86 @@
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 0.6
+    "experience_years": 0.8
   },
   {
-    "staff_id": "ST-037",
-    "display_name": "Сотрудник 037",
-    "service_center_id": "SC-04",
+    "staff_id": "ST-036",
+    "display_name": "Сотрудник 036",
+    "service_center_id": "SC-05",
     "profiles": [
       "LTP3"
     ],
     "technologies": [
+      "FTTB",
+      "DOCSIS",
       "PON",
+      "XDSL"
+    ],
+    "height_permit": false,
+    "shift": {
+      "start": "08:00",
+      "end": "17:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "12:00",
+        "to": "14:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 6.9
+  },
+  {
+    "staff_id": "ST-037",
+    "display_name": "Сотрудник 037",
+    "service_center_id": "SC-05",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "XDSL",
+      "PON",
+      "DOCSIS",
+      "FTTB"
+    ],
+    "height_permit": true,
+    "shift": {
+      "start": "12:00",
+      "end": "21:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "16:00",
+        "to": "18:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 1.7
+  },
+  {
+    "staff_id": "ST-038",
+    "display_name": "Сотрудник 038",
+    "service_center_id": "SC-05",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
       "FTTB",
       "XDSL",
       "DOCSIS"
@@ -1249,47 +1281,80 @@
       "end": "18:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "12:00",
+        "from": "13:00",
         "to": "15:00"
       }
     },
     "equipment_start": {
-      "ONT": 1,
+      "ONT": 2,
       "ROUTER": 2,
-      "STB": 0
+      "STB": 2
     },
     "equipment_capacity": {
       "ONT": 6,
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 3.1
+    "experience_years": 2.6
   },
   {
-    "staff_id": "ST-038",
-    "display_name": "Сотрудник 038",
-    "service_center_id": "SC-03",
+    "staff_id": "ST-039",
+    "display_name": "Сотрудник 039",
+    "service_center_id": "SC-05",
+    "profiles": [
+      "INSTALL"
+    ],
+    "technologies": [
+      "XDSL",
+      "FTTB"
+    ],
+    "height_permit": false,
+    "shift": {
+      "start": "08:00",
+      "end": "17:00",
+      "break_duration_min": 60,
+      "break_window": {
+        "from": "12:00",
+        "to": "14:00"
+      }
+    },
+    "equipment_start": {
+      "ONT": 2,
+      "ROUTER": 2,
+      "STB": 2
+    },
+    "equipment_capacity": {
+      "ONT": 6,
+      "ROUTER": 6,
+      "STB": 4
+    },
+    "experience_years": 3.6
+  },
+  {
+    "staff_id": "ST-040",
+    "display_name": "Сотрудник 040",
+    "service_center_id": "SC-05",
     "profiles": [
       "LTP3"
     ],
     "technologies": [
+      "XDSL",
       "FTTB",
-      "DOCSIS",
-      "XDSL"
+      "PON"
     ],
-    "height_permit": false,
+    "height_permit": true,
     "shift": {
       "start": "12:00",
       "end": "21:00",
       "break_duration_min": 60,
       "break_window": {
-        "from": "15:00",
+        "from": "16:00",
         "to": "18:00"
       }
     },
     "equipment_start": {
-      "ONT": 1,
-      "ROUTER": 3,
+      "ONT": 2,
+      "ROUTER": 2,
       "STB": 2
     },
     "equipment_capacity": {
@@ -1297,1337 +1362,6 @@
       "ROUTER": 6,
       "STB": 4
     },
-    "experience_years": 7.6
-  },
-  {
-    "staff_id": "ST-039",
-    "display_name": "Сотрудник 039",
-    "service_center_id": "SC-04",
-    "profiles": [
-      "LTP3"
-    ],
-    "technologies": [
-      "DOCSIS",
-      "PON",
-      "XDSL"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 1,
-      "ROUTER": 0,
-      "STB": 2
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 3.1
-  },
-  {
-    "staff_id": "ST-040",
-    "display_name": "Сотрудник 040",
-    "service_center_id": "SC-04",
-    "profiles": [
-      "LTP3"
-    ],
-    "technologies": [
-      "FTTB",
-      "PON",
-      "XDSL"
-    ],
-    "height_permit": false,
-    "shift": {
-      "start": "09:00",
-      "end": "18:00",
-      "break_duration_min": 60,
-      "break_window": {
-        "from": "12:00",
-        "to": "15:00"
-      }
-    },
-    "equipment_start": {
-      "ONT": 3,
-      "ROUTER": 0,
-      "STB": 0
-    },
-    "equipment_capacity": {
-      "ONT": 6,
-      "ROUTER": 6,
-      "STB": 4
-    },
-    "experience_years": 4.5
-=======
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 5,
-    "backpack_router": 3,
-    "backpack_tv": 4
-  },
-  {
-    "id": "STAFF-002",
-    "service_center_id": "SC-1",
-    "profile": "installation",
-    "technologies": [
-      "PON",
-      "FTTB"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 6,
-    "backpack_router": 4,
-    "backpack_tv": 1
-  },
-  {
-    "id": "STAFF-003",
-    "service_center_id": "SC-1",
-    "profile": "installation",
-    "technologies": [
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 4,
-    "backpack_router": 6,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-004",
-    "service_center_id": "SC-1",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "FTTB"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 3,
-    "backpack_router": 4,
-    "backpack_tv": 4
-  },
-  {
-    "id": "STAFF-005",
-    "service_center_id": "SC-1",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "PON"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 4,
-    "backpack_router": 3,
-    "backpack_tv": 1
-  },
-  {
-    "id": "STAFF-006",
-    "service_center_id": "SC-1",
-    "profile": "installation",
-    "technologies": [
-      "xDSL",
-      "PON"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 7,
-    "backpack_router": 6,
-    "backpack_tv": 2
-  },
-  {
-    "id": "STAFF-007",
-    "service_center_id": "SC-1",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-008",
-    "service_center_id": "SC-1",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-009",
-    "service_center_id": "SC-1",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-010",
-    "service_center_id": "SC-1",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-011",
-    "service_center_id": "SC-1",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-012",
-    "service_center_id": "SC-1",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-013",
-    "service_center_id": "SC-1",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-014",
-    "service_center_id": "SC-1",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-015",
-    "service_center_id": "SC-2",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "xDSL"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 6,
-    "backpack_router": 4,
-    "backpack_tv": 2
-  },
-  {
-    "id": "STAFF-016",
-    "service_center_id": "SC-2",
-    "profile": "installation",
-    "technologies": [
-      "FTTB",
-      "PON"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 3,
-    "backpack_router": 4,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-017",
-    "service_center_id": "SC-2",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "FTTB"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 5,
-    "backpack_router": 5,
-    "backpack_tv": 4
-  },
-  {
-    "id": "STAFF-018",
-    "service_center_id": "SC-2",
-    "profile": "installation",
-    "technologies": [
-      "FTTB",
-      "PON"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 5,
-    "backpack_router": 5,
-    "backpack_tv": 2
-  },
-  {
-    "id": "STAFF-019",
-    "service_center_id": "SC-2",
-    "profile": "installation",
-    "technologies": [
-      "FTTB",
-      "xDSL"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 4,
-    "backpack_router": 5,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-020",
-    "service_center_id": "SC-2",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "xDSL"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 3,
-    "backpack_router": 5,
-    "backpack_tv": 4
-  },
-  {
-    "id": "STAFF-021",
-    "service_center_id": "SC-2",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-022",
-    "service_center_id": "SC-2",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-023",
-    "service_center_id": "SC-2",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-024",
-    "service_center_id": "SC-2",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-025",
-    "service_center_id": "SC-2",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-026",
-    "service_center_id": "SC-2",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-027",
-    "service_center_id": "SC-2",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-028",
-    "service_center_id": "SC-2",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-029",
-    "service_center_id": "SC-3",
-    "profile": "installation",
-    "technologies": [
-      "PON",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 7,
-    "backpack_router": 3,
-    "backpack_tv": 4
-  },
-  {
-    "id": "STAFF-030",
-    "service_center_id": "SC-3",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "PON"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 4,
-    "backpack_router": 3,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-031",
-    "service_center_id": "SC-3",
-    "profile": "installation",
-    "technologies": [
-      "PON",
-      "FTTB"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 3,
-    "backpack_router": 3,
-    "backpack_tv": 1
-  },
-  {
-    "id": "STAFF-032",
-    "service_center_id": "SC-3",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "xDSL"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 4,
-    "backpack_router": 7,
-    "backpack_tv": 1
-  },
-  {
-    "id": "STAFF-033",
-    "service_center_id": "SC-3",
-    "profile": "installation",
-    "technologies": [
-      "FTTB",
-      "PON"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 4,
-    "backpack_router": 6,
-    "backpack_tv": 4
-  },
-  {
-    "id": "STAFF-034",
-    "service_center_id": "SC-3",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "FTTB"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 7,
-    "backpack_router": 4,
-    "backpack_tv": 1
-  },
-  {
-    "id": "STAFF-035",
-    "service_center_id": "SC-3",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-036",
-    "service_center_id": "SC-3",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-037",
-    "service_center_id": "SC-3",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-038",
-    "service_center_id": "SC-3",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-039",
-    "service_center_id": "SC-3",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-040",
-    "service_center_id": "SC-3",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-041",
-    "service_center_id": "SC-3",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-042",
-    "service_center_id": "SC-3",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-043",
-    "service_center_id": "SC-4",
-    "profile": "installation",
-    "technologies": [
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 5,
-    "backpack_router": 4,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-044",
-    "service_center_id": "SC-4",
-    "profile": "installation",
-    "technologies": [
-      "PON",
-      "DOCSIS"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 5,
-    "backpack_router": 8,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-045",
-    "service_center_id": "SC-4",
-    "profile": "installation",
-    "technologies": [
-      "FTTB",
-      "PON"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 3,
-    "backpack_router": 8,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-046",
-    "service_center_id": "SC-4",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "PON"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 6,
-    "backpack_router": 8,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-047",
-    "service_center_id": "SC-4",
-    "profile": "installation",
-    "technologies": [
-      "xDSL",
-      "FTTB"
-    ],
-    "height_access": false,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 8,
-    "backpack_router": 4,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-048",
-    "service_center_id": "SC-4",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "PON"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 4,
-    "backpack_router": 6,
-    "backpack_tv": 2
-  },
-  {
-    "id": "STAFF-049",
-    "service_center_id": "SC-4",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-050",
-    "service_center_id": "SC-4",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-051",
-    "service_center_id": "SC-4",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-052",
-    "service_center_id": "SC-4",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-053",
-    "service_center_id": "SC-4",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-054",
-    "service_center_id": "SC-4",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-055",
-    "service_center_id": "SC-4",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-056",
-    "service_center_id": "SC-4",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-057",
-    "service_center_id": "SC-5",
-    "profile": "installation",
-    "technologies": [
-      "FTTB",
-      "xDSL"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 6,
-    "backpack_router": 4,
-    "backpack_tv": 2
-  },
-  {
-    "id": "STAFF-058",
-    "service_center_id": "SC-5",
-    "profile": "installation",
-    "technologies": [
-      "PON",
-      "xDSL"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 8,
-    "backpack_router": 8,
-    "backpack_tv": 2
-  },
-  {
-    "id": "STAFF-059",
-    "service_center_id": "SC-5",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "FTTB"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 7,
-    "backpack_router": 4,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-060",
-    "service_center_id": "SC-5",
-    "profile": "installation",
-    "technologies": [
-      "xDSL",
-      "FTTB"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 7,
-    "backpack_router": 6,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-061",
-    "service_center_id": "SC-5",
-    "profile": "installation",
-    "technologies": [
-      "xDSL",
-      "FTTB"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 3,
-    "backpack_router": 3,
-    "backpack_tv": 3
-  },
-  {
-    "id": "STAFF-062",
-    "service_center_id": "SC-5",
-    "profile": "installation",
-    "technologies": [
-      "DOCSIS",
-      "PON"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 7,
-    "backpack_router": 7,
-    "backpack_tv": 2
-  },
-  {
-    "id": "STAFF-063",
-    "service_center_id": "SC-5",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-064",
-    "service_center_id": "SC-5",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-065",
-    "service_center_id": "SC-5",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-066",
-    "service_center_id": "SC-5",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-067",
-    "service_center_id": "SC-5",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-068",
-    "service_center_id": "SC-5",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-069",
-    "service_center_id": "SC-5",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
-  },
-  {
-    "id": "STAFF-070",
-    "service_center_id": "SC-5",
-    "profile": "3ltp",
-    "technologies": [
-      "PON",
-      "FTTB",
-      "xDSL",
-      "DOCSIS"
-    ],
-    "height_access": true,
-    "shift_start": "08:00",
-    "shift_end": "20:00",
-    "lunch_start": "13:00",
-    "lunch_end": "14:00",
-    "backpack_ont": 0,
-    "backpack_router": 0,
-    "backpack_tv": 0
->>>>>>> 025859cfced6bf58bc338dde4dd5a7f3f0e8116f
+    "experience_years": 8.7
   }
 ]
