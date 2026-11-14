@@ -1,0 +1,62 @@
+[
+  {
+    "service_center_id": "SC-01",
+    "name": "СЦ «Центральный»",
+    "address": "г. Екатеринбург, ул. Центральный, 10",
+    "lat": 56.858703,
+    "lon": 60.507503,
+    "opening_hours": {
+      "open": "08:00",
+      "close": "21:00"
+    },
+    "restock_duration_min": 15
+  },
+  {
+    "service_center_id": "SC-02",
+    "name": "СЦ «Северный»",
+    "address": "г. Екатеринбург, ул. Северный, 20",
+    "lat": 56.796755,
+    "lon": 60.566963,
+    "opening_hours": {
+      "open": "08:00",
+      "close": "21:00"
+    },
+    "restock_duration_min": 15
+  },
+  {
+    "service_center_id": "SC-03",
+    "name": "СЦ «Южный»",
+    "address": "г. Екатеринбург, ул. Южный, 30",
+    "lat": 56.8752,
+    "lon": 60.70301,
+    "opening_hours": {
+      "open": "08:00",
+      "close": "21:00"
+    },
+    "restock_duration_min": 15
+  },
+  {
+    "service_center_id": "SC-04",
+    "name": "СЦ «Западный»",
+    "address": "г. Екатеринбург, ул. Западный, 40",
+    "lat": 56.901671,
+    "lon": 60.526082,
+    "opening_hours": {
+      "open": "08:00",
+      "close": "21:00"
+    },
+    "restock_duration_min": 15
+  },
+  {
+    "service_center_id": "SC-05",
+    "name": "СЦ «Восточный»",
+    "address": "г. Екатеринбург, ул. Восточный, 50",
+    "lat": 56.821727,
+    "lon": 60.508939,
+    "opening_hours": {
+      "open": "08:00",
+      "close": "21:00"
+    },
+    "restock_duration_min": 15
+  }
+]
