@@ -1,3 +1,138 @@
+<<<<<<< HEAD
+{
+  "date": "2026-10-26",
+  "now": "2026-10-26T08:30:00+05:00",
+  "events": [
+    {
+      "event_id": "EV-0000",
+      "type": "ORDER_CANCELLED",
+      "timestamp": "2026-10-26T08:30:00+05:00",
+      "order_id": "ORD-20261028-9279",
+      "reason": "CUSTOMER_REQUEST"
+    },
+    {
+      "event_id": "EV-0001",
+      "type": "TIME_TICK",
+      "timestamp": "2026-10-26T08:45:00+05:00"
+    },
+    {
+      "event_id": "EV-0002",
+      "type": "STAFF_UNAVAILABLE",
+      "timestamp": "2026-10-26T09:00:00+05:00",
+      "staff_id": "ST-001",
+      "reason": "VEHICLE_BREAKDOWN"
+    },
+    {
+      "event_id": "EV-0003",
+      "type": "ORDER_CANCELLED",
+      "timestamp": "2026-10-26T09:15:00+05:00",
+      "order_id": "ORD-20261026-8856",
+      "reason": "CUSTOMER_REQUEST"
+    },
+    {
+      "event_id": "EV-0004",
+      "type": "TIME_TICK",
+      "timestamp": "2026-10-26T09:30:00+05:00"
+    },
+    {
+      "event_id": "EV-0005",
+      "type": "STAFF_UNAVAILABLE",
+      "timestamp": "2026-10-26T09:45:00+05:00",
+      "staff_id": "ST-001",
+      "reason": "VEHICLE_BREAKDOWN"
+    },
+    {
+      "event_id": "EV-0006",
+      "type": "ORDER_CANCELLED",
+      "timestamp": "2026-10-26T10:00:00+05:00",
+      "order_id": "ORD-20261102-6100",
+      "reason": "CUSTOMER_REQUEST"
+    },
+    {
+      "event_id": "EV-0007",
+      "type": "TIME_TICK",
+      "timestamp": "2026-10-26T10:15:00+05:00"
+    },
+    {
+      "event_id": "EV-0008",
+      "type": "STAFF_UNAVAILABLE",
+      "timestamp": "2026-10-26T10:30:00+05:00",
+      "staff_id": "ST-001",
+      "reason": "VEHICLE_BREAKDOWN"
+    },
+    {
+      "event_id": "EV-0009",
+      "type": "ORDER_CANCELLED",
+      "timestamp": "2026-10-26T10:45:00+05:00",
+      "order_id": "ORD-20261026-7673",
+      "reason": "CUSTOMER_REQUEST"
+    },
+    {
+      "event_id": "EV-0010",
+      "type": "TIME_TICK",
+      "timestamp": "2026-10-26T11:00:00+05:00"
+    },
+    {
+      "event_id": "EV-0011",
+      "type": "STAFF_UNAVAILABLE",
+      "timestamp": "2026-10-26T11:15:00+05:00",
+      "staff_id": "ST-001",
+      "reason": "VEHICLE_BREAKDOWN"
+    },
+    {
+      "event_id": "EV-0012",
+      "type": "ORDER_CANCELLED",
+      "timestamp": "2026-10-26T11:30:00+05:00",
+      "order_id": "ORD-20261028-6030",
+      "reason": "CUSTOMER_REQUEST"
+    },
+    {
+      "event_id": "EV-0013",
+      "type": "TIME_TICK",
+      "timestamp": "2026-10-26T11:45:00+05:00"
+    },
+    {
+      "event_id": "EV-0014",
+      "type": "STAFF_UNAVAILABLE",
+      "timestamp": "2026-10-26T12:00:00+05:00",
+      "staff_id": "ST-001",
+      "reason": "VEHICLE_BREAKDOWN"
+    },
+    {
+      "event_id": "EV-0015",
+      "type": "ORDER_CANCELLED",
+      "timestamp": "2026-10-26T12:15:00+05:00",
+      "order_id": "ORD-20261030-2771",
+      "reason": "CUSTOMER_REQUEST"
+    },
+    {
+      "event_id": "EV-0016",
+      "type": "TIME_TICK",
+      "timestamp": "2026-10-26T12:30:00+05:00"
+    },
+    {
+      "event_id": "EV-0017",
+      "type": "STAFF_UNAVAILABLE",
+      "timestamp": "2026-10-26T12:45:00+05:00",
+      "staff_id": "ST-001",
+      "reason": "VEHICLE_BREAKDOWN"
+    },
+    {
+      "event_id": "EV-0018",
+      "type": "ORDER_CANCELLED",
+      "timestamp": "2026-10-26T13:00:00+05:00",
+      "order_id": "ORD-20261027-7872",
+      "reason": "CUSTOMER_REQUEST"
+    },
+    {
+      "event_id": "EV-0019",
+      "type": "TIME_TICK",
+      "timestamp": "2026-10-26T13:15:00+05:00"
+    }
+  ],
+  "triggers": []
+}
+=======
 [
   {
     "received_at": "2026-11-14T12:26:48.093580",
@@ -14,3 +149,4 @@
     }
   }
 ]
+>>>>>>> 025859cfced6bf58bc338dde4dd5a7f3f0e8116f

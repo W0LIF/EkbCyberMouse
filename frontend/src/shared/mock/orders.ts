@@ -1,0 +1,58 @@
+import type { Order } from "../types/domain";
+
+export const orders: Order[] = [
+  {
+    id: "ORD00142",
+    type: "3ЛТП · PON",
+    address: "ул. Малышева, 51",
+    slot: "12:00–14:00",
+    person: "Иванов И. И.",
+    center: "Северный",
+    status: "В работе",
+  },
+  {
+    id: "ORD00143",
+    type: "Инсталляция",
+    address: "ул. Луначарского, 92",
+    slot: "13:00–15:00",
+    person: "Смирнова А. В.",
+    center: "Центральный",
+    status: "Запланирован",
+  },
+  {
+    id: "ORD00144",
+    type: "3ЛТП · DOCSIS",
+    address: "ул. Татищева, 90",
+    slot: "14:00–16:00",
+    person: "Волкова М. С.",
+    center: "Западный",
+    status: "Риск",
+  },
+  {
+    id: "ORD00145",
+    type: "Инсталляция",
+    address: "ул. Щорса, 39",
+    slot: "15:00–17:00",
+    person: "—",
+    center: "Южный",
+    status: "Не распределён",
+  },
+  {
+    id: "ORD00146",
+    type: "3ЛТП · PON",
+    address: "ул. Восточная, 17",
+    slot: "16:00–18:00",
+    person: "Петров А. Н.",
+    center: "Восточный",
+    status: "ПГП",
+  },
+  {
+    id: "ORD00147",
+    type: "Инсталляция",
+    address: "ул. Бебеля, 156",
+    slot: "10:00–12:00",
+    person: "Кузнецов О. В.",
+    center: "Северный",
+    status: "Выполнен",
+  },
+];
