@@ -181,7 +181,18 @@ export interface ApiNewOrderEvent {
   order: ApiNewOrder;
 }
 
-export type ApiEvent = ApiTimeTickEvent | ApiNewOrderEvent;
+export interface ApiOrderAssignedEvent {
+  event_id: string;
+  type: "ORDER_ASSIGNED";
+  timestamp: string;
+  order_id: string;
+  staff_id: string;
+}
+
+export type ApiEvent =
+  | ApiTimeTickEvent
+  | ApiNewOrderEvent
+  | ApiOrderAssignedEvent;
 
 export class ApiError extends Error {
   constructor(

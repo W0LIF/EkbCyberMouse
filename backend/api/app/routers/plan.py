@@ -124,7 +124,7 @@ async def build_plan(
     apply_duration_forecasts(
         orders_dicts,
         await orders_repo.get_duration_history(),
-        work_types,
+        [work_type.model_dump() for work_type in work_types],
     )
     matrix = matrix_store.as_matrix()
 

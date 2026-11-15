@@ -7,9 +7,10 @@ interface OrderDrawerProps {
   orderId: string | null;
   close: () => void;
   onExplain: (orderId: string) => void;
+  onAssign: (orderId: string) => void;
 }
 
-export function OrderDrawer({ orderId, close, onExplain }: OrderDrawerProps) {
+export function OrderDrawer({ orderId, close, onExplain, onAssign }: OrderDrawerProps) {
   const { orders, staff, centers, plan } = useDispatchData();
   const order = orders.find((item) => item.order_id === orderId);
   const staffId = order?.assigned_staff_id ?? null;
@@ -90,6 +91,13 @@ export function OrderDrawer({ orderId, close, onExplain }: OrderDrawerProps) {
                 </span>
               </div>
             </div>
+            {plan?.unassigned.some((item) => item.order_id === order.order_id) && (
+              <div className="drawer-section">
+                <Button onClick={() => onAssign(order.order_id)}>
+                  Назначить сотрудника
+                </Button>
+              </div>
+            )}
             {visit?.explanation && (
               <div className="drawer-section">
                 <h3>Почему назначен</h3>

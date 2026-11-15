@@ -1473,6 +1473,7 @@ components:
       enum:
         - NEW_ORDER
         - ORDER_CANCELLED
+        - ORDER_ASSIGNED
         - VISIT_DELAYED
         - ORDER_TRANSFERRED
         - STAFF_UNAVAILABLE
@@ -1482,6 +1483,7 @@ components:
         |---|---|
         | `NEW_ORDER` | зарегистрирован новый наряд со слотом сегодня |
         | `ORDER_CANCELLED` | абонент не подтвердил визит при звонке или отказался |
+        | `ORDER_ASSIGNED` | диспетчер назначил нераспределённый наряд сотруднику |
         | `VISIT_DELAYED` | работы на объекте затягиваются, визит закончится в `expected_end` |
         | `ORDER_TRANSFERRED` | повреждение вне зоны ответственности 3ЛТП: наряд передан в профильное подразделение, визит закончился в `actual_end` |
         | `STAFF_UNAVAILABLE` | сотрудник недоступен с `timestamp` до `until` |
@@ -1525,6 +1527,20 @@ components:
             reason:
               type: string
               enum: [NOT_CONFIRMED, CUSTOMER_REQUEST]
+    OrderAssignedEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventBase'
+        - type: object
+          required: [type, staff_id, order_id]
+          description: Назначает нераспределённый наряд указанному сотруднику; сервер проверяет допустимость и перепланирует смену.
+          properties:
+            type:
+              type: string
+              enum: [ORDER_ASSIGNED]
+            staff_id:
+              type: string
+            order_id:
+              type: string
     VisitDelayedEvent:
       allOf:
         - $ref: '#/components/schemas/EventBase'
@@ -1595,6 +1611,7 @@ components:
       oneOf:
         - $ref: '#/components/schemas/NewOrderEvent'
         - $ref: '#/components/schemas/OrderCancelledEvent'
+        - $ref: '#/components/schemas/OrderAssignedEvent'
         - $ref: '#/components/schemas/VisitDelayedEvent'
         - $ref: '#/components/schemas/OrderTransferredEvent'
         - $ref: '#/components/schemas/StaffUnavailableEvent'
@@ -1604,6 +1621,7 @@ components:
         mapping:
           NEW_ORDER: '#/components/schemas/NewOrderEvent'
           ORDER_CANCELLED: '#/components/schemas/OrderCancelledEvent'
+          ORDER_ASSIGNED: '#/components/schemas/OrderAssignedEvent'
           VISIT_DELAYED: '#/components/schemas/VisitDelayedEvent'
           ORDER_TRANSFERRED: '#/components/schemas/OrderTransferredEvent'
           STAFF_UNAVAILABLE: '#/components/schemas/StaffUnavailableEvent'

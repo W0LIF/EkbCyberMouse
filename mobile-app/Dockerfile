@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 8081
 
-CMD ["npm", "start", "--", "--host", "lan", "--port", "8081"]
+CMD ["npm", "start", "--", "--web", "--host", "lan", "--port", "8081", "--non-interactive"]

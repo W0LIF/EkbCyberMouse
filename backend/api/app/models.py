@@ -67,6 +67,7 @@ PgpAction = Literal["TRANSFER_TO_STATION"]
 EventType = Literal[
     "NEW_ORDER",
     "ORDER_CANCELLED",
+    "ORDER_ASSIGNED",
     "VISIT_DELAYED",
     "ORDER_TRANSFERRED",
     "STAFF_UNAVAILABLE",
@@ -446,6 +447,12 @@ class OrderCancelledEvent(_EventBase):
     reason: Literal["NOT_CONFIRMED", "CUSTOMER_REQUEST"]
 
 
+class OrderAssignedEvent(_EventBase):
+    type: Literal["ORDER_ASSIGNED"]
+    staff_id: str
+    order_id: str
+
+
 class VisitDelayedEvent(_EventBase):
     type: Literal["VISIT_DELAYED"]
     staff_id: str
@@ -476,6 +483,7 @@ Event = Annotated[
     Union[
         NewOrderEvent,
         OrderCancelledEvent,
+        OrderAssignedEvent,
         VisitDelayedEvent,
         OrderTransferredEvent,
         StaffUnavailableEvent,

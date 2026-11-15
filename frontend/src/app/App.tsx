@@ -42,6 +42,11 @@ export default function App() {
     setExplainOrderId(orderId);
     setModal("explain");
   }
+  function openAssignment(orderId: string) {
+    setSelectedOrderId(null);
+    setExplainOrderId(orderId);
+    setModal("reassign");
+  }
 
   const isMobile = useMemo(
     () =>
@@ -126,6 +131,7 @@ export default function App() {
                 setSelectedOrderId(null);
               }}
               onExplain={openExplanation}
+              onAssign={openAssignment}
             />
           )}
           {newOrderOpen && <NewOrderModal close={() => setNewOrderOpen(false)} />}

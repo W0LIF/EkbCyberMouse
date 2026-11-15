@@ -42,6 +42,9 @@ const COLORS = {
   redLight: "#FCECEC",
 };
 
+const MIN_ROUTE_DATE = "1900-01-01";
+const MAX_ROUTE_DATE = "2100-12-31";
+
 function dateToIso(date: Date): string {
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
   return localDate.toISOString().slice(0, 10);
@@ -50,6 +53,12 @@ function dateToIso(date: Date): string {
 function isoToDate(value: string): Date {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day);
+}
+
+function shiftDateByDays(value: string, days: number): string {
+  const shifted = isoToDate(value);
+  shifted.setDate(shifted.getDate() + days);
+  return dateToIso(shifted);
 }
 
 function formatTime(value?: string): string | undefined {
@@ -121,6 +130,8 @@ export default function App() {
   const [actionError, setActionError] = useState("");
   const [actionFeedback, setActionFeedback] = useState("");
   const [mapError, setMapError] = useState("");
+  const previousWeek = shiftDateByDays(date, -7);
+  const nextWeek = shiftDateByDays(date, 7);
 
   const selectedStaff = useMemo(
     () => staff.find((member) => member.staff_id === selectedStaffId),
@@ -294,19 +305,47 @@ export default function App() {
               </Pressable>
               <View style={styles.separator} />
               <Text style={styles.sectionLabel}>Дата маршрута</Text>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Выбрать дату"
-                onPress={() => {
-                  setPendingDate(isoToDate(date));
-                  setShowDatePicker(true);
-                }}
-                style={styles.dateButton}
-              >
-                <Text style={styles.calendarIcon}>▦</Text>
-                <Text style={styles.selectValue}>{date}</Text>
-                <Text style={styles.changeLabel}>Изменить</Text>
-              </Pressable>
+              <View style={styles.dateNavigator}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="На неделю назад"
+                  accessibilityState={{ disabled: previousWeek < MIN_ROUTE_DATE }}
+                  disabled={previousWeek < MIN_ROUTE_DATE}
+                  onPress={() => setDate(previousWeek)}
+                  style={[
+                    styles.dateStepButton,
+                    previousWeek < MIN_ROUTE_DATE && styles.buttonDisabled,
+                  ]}
+                >
+                  <Text style={styles.dateStepLabel}>‹</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Выбрать дату"
+                  onPress={() => {
+                    setPendingDate(isoToDate(date));
+                    setShowDatePicker(true);
+                  }}
+                  style={styles.dateButton}
+                >
+                  <Text style={styles.calendarIcon}>▦</Text>
+                  <Text style={styles.selectValue}>{date}</Text>
+                  <Text style={styles.changeLabel}>Изменить</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="На неделю вперёд"
+                  accessibilityState={{ disabled: nextWeek > MAX_ROUTE_DATE }}
+                  disabled={nextWeek > MAX_ROUTE_DATE}
+                  onPress={() => setDate(nextWeek)}
+                  style={[
+                    styles.dateStepButton,
+                    nextWeek > MAX_ROUTE_DATE && styles.buttonDisabled,
+                  ]}
+                >
+                  <Text style={styles.dateStepLabel}>›</Text>
+                </Pressable>
+              </View>
             </>
           )}
         </View>
@@ -444,7 +483,8 @@ export default function App() {
                 mode="date"
                 display="spinner"
                 onChange={onDatePickerChange}
-                maximumDate={new Date(2099, 11, 31)}
+                minimumDate={new Date(1900, 0, 1)}
+                maximumDate={new Date(2100, 11, 31)}
               />
               <View style={styles.dateSheetActions}>
                 <Pressable
@@ -472,7 +512,8 @@ export default function App() {
           mode="date"
           display="default"
           onChange={onDatePickerChange}
-          maximumDate={new Date(2099, 11, 31)}
+          minimumDate={new Date(1900, 0, 1)}
+          maximumDate={new Date(2100, 11, 31)}
         />
       ) : null}
     </SafeAreaView>
@@ -759,13 +800,34 @@ const styles = StyleSheet.create({
   },
   chevron: { color: COLORS.muted, fontSize: 22, marginTop: -7 },
   separator: { height: 1, backgroundColor: COLORS.line, marginVertical: 16 },
+  dateNavigator: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   dateButton: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     minHeight: 48,
     paddingHorizontal: 12,
     backgroundColor: COLORS.background,
     borderRadius: 12,
+  },
+  dateStepButton: {
+    width: 42,
+    height: 48,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.white,
+  },
+  dateStepLabel: {
+    color: COLORS.blue,
+    fontSize: 28,
+    lineHeight: 32,
   },
   calendarIcon: {
     color: COLORS.blue,

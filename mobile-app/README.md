@@ -23,7 +23,8 @@ MOBILE_API_BASE_URL=http://192.168.1.25:8080/api/v1
 
 Замените IP на адрес своего компьютера, перезапустите Compose, затем откройте
 QR-код Expo из логов `docker compose logs -f mobile` в Expo Go. Телефон и
-компьютер должны быть в одной сети. Compose публикует Metro на порту `8081`.
+компьютер должны быть в одной сети. Compose также публикует браузерную версию
+приложения по адресу <http://localhost:8081>.
 
 ### Local development
 
@@ -42,12 +43,24 @@ running on another host. For a physical phone, `localhost` refers to the phone,
 so use the computer's LAN address, for example
 `EXPO_PUBLIC_API_BASE_URL=http://192.168.1.25:8080/api/v1`.
 
+To run the mobile interface in a browser locally, use `npm run web`. To build
+the browser bundle, run `npm run build:web`.
+
 The app loads employees from `GET /reference/staff`, then requests the selected
 employee's route from
 `GET /mobile/days/{date}/routes/{staff_id}`. Route responses may contain a
 `visits` array, a `stops` array, or those arrays under `route`; each visit
 includes its order ID, address, status, and available time fields (`arrival`,
 `start`, and `end`). Route stops with a `type` field are filtered to `VISIT`.
+
+## Date navigation
+
+Use the left and right arrow buttons beside the route date to move exactly
+seven days backward or forward. The date picker can select an individual day;
+the supported app range is `1900-01-01` through `2100-12-31`. The selected
+employee's route is reloaded automatically after changing the date. Historical
+routes are available when the API has data for that day; with demo generation
+enabled, a missing day can instead be populated with synthetic data.
 
 Actions are posted to
 `POST /mobile/days/{date}/routes/{staff_id}/visits/{order_id}/actions` with the

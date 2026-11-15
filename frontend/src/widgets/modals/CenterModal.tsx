@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { AlertTriangle, Check, Sparkles, X } from "lucide-react";
 import type { ModalType } from "../../shared/types/domain";
-import { employees } from "../../shared/mock/employees";
 import { dispatchApi, type ApiScenarioResult } from "../../shared/api";
 import { useDispatchData } from "../../features/dispatch/DispatchDataContext";
+import { useToast } from "../../features/toast/ToastProvider";
 import { Button } from "../../shared/ui/Button";
-import { Chips } from "../../shared/ui/Chips";
 
 interface CenterModalProps {
   type: Exclude<ModalType, "order" | null>;
@@ -14,7 +13,9 @@ interface CenterModalProps {
 }
 
 export function CenterModal({ type, orderId, close }: CenterModalProps) {
-  const { date, staff: staffMembers, plan, orders } = useDispatchData();
+  const { date, staff: staffMembers, centers, plan, orders, refresh } =
+    useDispatchData();
+  const { toast } = useToast();
   const [staffReduction, setStaffReduction] = useState(3);
   const maxStaffReduction = Math.max(0, staffMembers.length - 1);
   const selectedStaffReduction = Math.min(staffReduction, maxStaffReduction);
@@ -26,6 +27,45 @@ export function CenterModal({ type, orderId, close }: CenterModalProps) {
   const [scenario, setScenario] = useState<ApiScenarioResult | null>(null);
   const [scenarioLoading, setScenarioLoading] = useState(false);
   const [scenarioError, setScenarioError] = useState<string | null>(null);
+  const [assignmentError, setAssignmentError] = useState<string | null>(null);
+  const [assigningStaffId, setAssigningStaffId] = useState<string | null>(null);
+  const assignmentOrder = orders.find((order) => order.order_id === orderId);
+
+  async function assignOrder(staffId: string) {
+    if (!assignmentOrder || !plan) {
+      setAssignmentError("Нет данных наряда или актуального плана.");
+      return;
+    }
+
+    setAssigningStaffId(staffId);
+    setAssignmentError(null);
+    try {
+      const result = await dispatchApi.postEvent(date, {
+        event_id: `EV-UI-${crypto.randomUUID()}`,
+        type: "ORDER_ASSIGNED",
+        timestamp: new Date(Date.parse(plan.as_of) + 1000).toISOString(),
+        order_id: assignmentOrder.order_id,
+        staff_id: staffId,
+      });
+      if (!result.accepted) {
+        throw new Error(result.message ?? "Сервер не принял назначение.");
+      }
+
+      const refreshed = await refresh();
+      toast(
+        refreshed
+          ? `Наряд ${assignmentOrder.order_id} назначен сотруднику`
+          : "Наряд назначен, но план не удалось обновить",
+      );
+      close();
+    } catch (cause) {
+      setAssignmentError(
+        cause instanceof Error ? cause.message : "Не удалось назначить наряд",
+      );
+    } finally {
+      setAssigningStaffId(null);
+    }
+  }
 
   async function analyzeScenario() {
     setScenarioLoading(true);
@@ -156,40 +196,68 @@ export function CenterModal({ type, orderId, close }: CenterModalProps) {
         <div className="modal reassign">
           <div className="modal-head">
             <div>
-              <span>ПЕРЕНАЗНАЧЕНИЕ</span>
-              <h2>Подходящие сотрудники</h2>
+              <span>НАЗНАЧЕНИЕ НАРЯДА</span>
+              <h2>{assignmentOrder?.order_id ?? "Наряд не выбран"}</h2>
             </div>
             <button onClick={close}>
               <X size={20} />
             </button>
           </div>
-          <Chips items={["Все", "PON", "Допуск к высоте", "Ближе 5 км"]} selected="Все" />
-          {employees.slice(1, 4).map((e, i) => (
-            <div className="candidate" key={e.name}>
-              <span className="avatar">{e.initials}</span>
+          {assignmentOrder && (
+            <p>
+              {assignmentOrder.address} · {assignmentOrder.technology} ·{" "}
+              {assignmentOrder.slot.start.slice(11, 16)}–{assignmentOrder.slot.end.slice(11, 16)}
+            </p>
+          )}
+          {assignmentError && (
+            <p className="scenario-error" role="alert">{assignmentError}</p>
+          )}
+          {staffMembers.map((person) => {
+            const center = centers.find(
+              (item) => item.service_center_id === person.service_center_id,
+            );
+            const technologyMatches =
+              person.technologies.includes(assignmentOrder?.technology ?? "");
+            const heightMatches =
+              !assignmentOrder?.requires_height || person.height_permit;
+
+            return (
+            <div className="candidate" key={person.staff_id}>
+              <span className="avatar">
+                {(person.display_name ?? person.staff_id).slice(0, 2)}
+              </span>
               <div>
-                <b>{e.name}</b>
-                <small>
-                  {e.center} · {2 + i * 1.4} км
-                </small>
+                <b>{person.display_name ?? person.staff_id}</b>
+                <small>{center?.name ?? person.service_center_id} · {person.technologies.join(", ")}</small>
                 <p>
                   <span>
-                    <Check size={11} />
-                    PON
+                    {technologyMatches && <Check size={11} />}
+                    {technologyMatches ? "Технология подходит" : "Технология не совпадает"}
                   </span>
                   <span>
-                    <Check size={11} />
-                    Есть окно
-                  </span>
-                  <span>
-                    <Check size={11} />
-                    АО в наличии
+                    {heightMatches && <Check size={11} />}
+                    {heightMatches ? "Допуск по высоте подходит" : "Нет допуска к высоте"}
                   </span>
                 </p>
               </div>
-              <Button onClick={close}>Выбрать</Button>
+              <Button
+                onClick={() => void assignOrder(person.staff_id)}
+                disabled={
+                  !assignmentOrder ||
+                  !plan ||
+                  assigningStaffId !== null ||
+                  !technologyMatches ||
+                  !heightMatches
+                }
+              >
+                {assigningStaffId === person.staff_id ? "Назначаем…" : "Назначить"}
+              </Button>
             </div>
-          ))}
+            );
+          })}
+          {staffMembers.length === 0 && (
+            <p className="empty-state">Список сотрудников не загружен.</p>
+          )}
         </div>
       </>
     );

@@ -15,6 +15,7 @@ from api.app.models import (
     Event,
     EventResult,
     NewOrderEvent,
+    OrderAssignedEvent,
     OrderCancelledEvent,
     Order,
     OrderTransferredEvent,
@@ -173,6 +174,15 @@ async def post_event(
     order_ids = {item["order_id"] for item in all_orders}
     if isinstance(event, OrderCancelledEvent) and event.order_id not in order_ids:
         raise HTTPException(422, f"Наряд {event.order_id} не найден")
+    if isinstance(event, OrderAssignedEvent):
+        if event.order_id not in order_ids:
+            raise HTTPException(422, f"Наряд {event.order_id} не найден")
+        if event.staff_id not in staff_ids:
+            raise HTTPException(422, f"Сотрудник {event.staff_id} не найден")
+        if event.order_id not in {
+            item["order_id"] for item in plan_data.get("unassigned", [])
+        }:
+            raise HTTPException(409, "Назначить можно только нераспределённый наряд")
     if isinstance(event, (VisitDelayedEvent, OrderTransferredEvent)):
         if event.staff_id not in staff_ids:
             raise HTTPException(422, f"Сотрудник {event.staff_id} не найден")
@@ -369,6 +379,20 @@ async def post_event(
         await orders_repo.get_duration_history(),
         [work_type.model_dump() for work_type in work_types],
     )
+    assignment_depot_start = None
+    if isinstance(event, OrderAssignedEvent):
+        fixed_route = next(
+            (route for route in retained_routes if route.staff_id == event.staff_id),
+            None,
+        )
+        if (
+            fixed_route is not None
+            and len(fixed_route.stops) == 1
+            and fixed_route.stops[0].type == "DEPOT_START"
+        ):
+            assignment_depot_start = fixed_route.stops[0]
+            retained_routes.remove(fixed_route)
+
     retained_staff_ids = {
         staff_id
         for route in retained_routes
@@ -387,18 +411,90 @@ async def post_event(
         absent_staff_ids=sorted(unavailable_staff_ids),
     )
 
-    if solver_orders and solver_staff:
-        new_plan = await run_in_threadpool(
+    assigned_route = None
+    assigned_order_ids: set[str] = set()
+    if isinstance(event, OrderAssignedEvent):
+        assigned_order = next(
+            (order for order in solver_orders if order["order_id"] == event.order_id),
+            None,
+        )
+        assigned_person = next(
+            (person for person in solver_staff if person.staff_id == event.staff_id),
+            None,
+        )
+        if assigned_order is None:
+            raise HTTPException(
+                409,
+                "Наряд уже начат, отменён или сгруппирован в ПГП и не может быть назначен",
+            )
+        if assigned_person is None:
+            raise HTTPException(
+                409,
+                "У выбранного сотрудника уже есть зафиксированная часть маршрута "
+                "или он недоступен",
+            )
+
+        selected_plan = await run_in_threadpool(
             solve_vrp,
             date=date,
             day=event_day,
-            orders=solver_orders,
-            staff=solver_staff,
+            orders=[assigned_order],
+            staff=[assigned_person],
             work_types=work_types,
             service_centers=centers,
             matrix=matrix_store.as_matrix(),
             plan_version=plan_data["plan_version"] + 1,
-            max_runtime_seconds=8,
+            max_runtime_seconds=3 if isinstance(event, OrderAssignedEvent) else 8,
+        )
+        assigned_route = next(
+            (
+                route
+                for route in selected_plan.routes
+                if route.staff_id == event.staff_id
+                and any(
+                    stop.type == "VISIT" and stop.order_id == event.order_id
+                    for stop in route.stops
+                )
+            ),
+            None,
+        )
+        if assigned_route is None:
+            raise HTTPException(
+                422,
+                "Выбранный сотрудник не может выполнить этот наряд "
+                "с учётом допуска, смены, слота и оборудования",
+            )
+        if assignment_depot_start is not None:
+            assigned_route.stops[0] = assignment_depot_start
+        assigned_order_ids = {
+            stop.order_id
+            for stop in assigned_route.stops
+            if stop.type == "VISIT" and stop.order_id
+        }
+
+    remaining_orders = [
+        order
+        for order in solver_orders
+        if order["order_id"] not in assigned_order_ids
+    ]
+    remaining_staff = [
+        person
+        for person in solver_staff
+        if not isinstance(event, OrderAssignedEvent)
+        or person.staff_id != event.staff_id
+    ]
+    if remaining_orders and remaining_staff:
+        new_plan = await run_in_threadpool(
+            solve_vrp,
+            date=date,
+            day=event_day,
+            orders=remaining_orders,
+            staff=remaining_staff,
+            work_types=work_types,
+            service_centers=centers,
+            matrix=matrix_store.as_matrix(),
+            plan_version=plan_data["plan_version"] + 1,
+            max_runtime_seconds=3 if isinstance(event, OrderAssignedEvent) else 8,
         )
     else:
         new_plan = Plan(
@@ -411,6 +507,11 @@ async def post_event(
             cancelled=[],
             alerts=[],
         )
+    if assigned_route is not None:
+        new_plan.routes.append(assigned_route)
+        new_plan.unassigned = [
+            item for item in new_plan.unassigned if item.order_id not in assigned_order_ids
+        ]
 
     new_plan.routes = retained_routes + new_plan.routes
     new_plan.pgp_groups = pgp_groups
@@ -458,6 +559,17 @@ async def post_event(
         )
 
     old_alerts = [Alert.model_validate(item) for item in plan_data.get("alerts", [])]
+    if isinstance(event, OrderAssignedEvent):
+        old_alerts = [
+            alert.model_copy(
+                update={"status": "RESOLVED", "resolved_at": event.timestamp}
+            )
+            if alert.type == "UNASSIGNED"
+            and alert.order_id == event.order_id
+            and alert.status == "ACTIVE"
+            else alert
+            for alert in old_alerts
+        ]
     new_alerts = [
         Alert(
             alert_id=f"ALR-{date.replace('-', '')}-{uuid.uuid4().hex[:12]}",

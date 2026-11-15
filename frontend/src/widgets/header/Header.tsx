@@ -4,6 +4,7 @@ import {
   Bell,
   CalendarDays,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   HelpCircle,
   Search,
@@ -17,6 +18,12 @@ import { useDispatchData } from "../../features/dispatch/DispatchDataContext";
 
 const MIN_PLAN_DATE = "1900-01-01";
 const MAX_PLAN_DATE = "2100-12-31";
+
+function addDays(date: string, days: number) {
+  const shifted = new Date(`${date}T00:00:00Z`);
+  shifted.setUTCDate(shifted.getUTCDate() + days);
+  return shifted.toISOString().slice(0, 10);
+}
 
 interface HeaderProps {
   onHelp: () => void;
@@ -82,6 +89,8 @@ export function Header({ onHelp, onOpenOrder }: HeaderProps) {
     month: "long",
     timeZone: "UTC",
   });
+  const previousWeek = addDays(date, -7);
+  const nextWeek = addDays(date, 7);
 
   useEffect(() => {
     if (!notificationsOpen) return;
@@ -121,21 +130,45 @@ export function Header({ onHelp, onOpenOrder }: HeaderProps) {
         <kbd>Ctrl + K</kbd>
       </div>
       <div className="header-actions">
-        <label className="date-button">
-          <CalendarDays size={17} />
-          <span>{dateLabel}</span>
-          <ChevronDown size={14} />
-          <input
-            type="date"
-            aria-label="Выбрать дату плана"
-            min={MIN_PLAN_DATE}
-            max={MAX_PLAN_DATE}
-            value={date}
-            onChange={(event) => {
-              if (event.target.value) selectDate(event.target.value);
-            }}
-          />
-        </label>
+        <div
+          className="date-navigation"
+          role="group"
+          aria-label="Навигация по датам плана"
+        >
+          <button
+            className="icon-button date-step-button"
+            aria-label="На неделю назад"
+            title="На неделю назад"
+            disabled={previousWeek < MIN_PLAN_DATE}
+            onClick={() => selectDate(previousWeek)}
+          >
+            <ChevronLeft size={17} />
+          </button>
+          <label className="date-button">
+            <CalendarDays size={17} />
+            <span>{dateLabel}</span>
+            <ChevronDown size={14} />
+            <input
+              type="date"
+              aria-label="Выбрать дату плана"
+              min={MIN_PLAN_DATE}
+              max={MAX_PLAN_DATE}
+              value={date}
+              onChange={(event) => {
+                if (event.target.value) selectDate(event.target.value);
+              }}
+            />
+          </label>
+          <button
+            className="icon-button date-step-button"
+            aria-label="На неделю вперёд"
+            title="На неделю вперёд"
+            disabled={nextWeek > MAX_PLAN_DATE}
+            onClick={() => selectDate(nextWeek)}
+          >
+            <ChevronRight size={17} />
+          </button>
+        </div>
         <div className="notification-anchor" ref={notificationsRef}>
           <button
             className={`icon-button${notifications.length ? " unread" : ""}`}
