@@ -16,7 +16,13 @@ import {
   type ApiStaff,
 } from "../../shared/api";
 
-const DISPATCH_DATE = "2026-11-14";
+function getLocalDateIso() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 interface DispatchData {
   date: string;
@@ -42,7 +48,7 @@ export function DispatchDataProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [replanning, setReplanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [date, setDate] = useState(DISPATCH_DATE);
+  const [date, setDate] = useState(getLocalDateIso);
   const lastLoadDate = useRef<string | null>(null);
   const loadSequence = useRef(0);
 

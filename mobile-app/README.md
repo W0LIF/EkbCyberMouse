@@ -55,12 +55,12 @@ includes its order ID, address, status, and available time fields (`arrival`,
 
 ## Date navigation
 
-Use the left and right arrow buttons beside the route date to move exactly
-seven days backward or forward. The date picker can select an individual day;
-the supported app range is `1900-01-01` through `2100-12-31`. The selected
-employee's route is reloaded automatically after changing the date. Historical
-routes are available when the API has data for that day; with demo generation
-enabled, a missing day can instead be populated with synthetic data.
+Use the left and right arrow buttons beside the route date to move one day at a
+time. The date picker allows any day from 7 days before today through 7 days
+after today, inclusive. The selected employee's route is reloaded automatically
+after changing the date. Historical routes are available when the API has data
+for that day; with demo generation enabled, a missing day can instead be
+populated with synthetic data.
 
 Actions are posted to
 `POST /mobile/days/{date}/routes/{staff_id}/visits/{order_id}/actions` with the

@@ -42,9 +42,6 @@ const COLORS = {
   redLight: "#FCECEC",
 };
 
-const MIN_ROUTE_DATE = "1900-01-01";
-const MAX_ROUTE_DATE = "2100-12-31";
-
 function dateToIso(date: Date): string {
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
   return localDate.toISOString().slice(0, 10);
@@ -130,8 +127,11 @@ export default function App() {
   const [actionError, setActionError] = useState("");
   const [actionFeedback, setActionFeedback] = useState("");
   const [mapError, setMapError] = useState("");
-  const previousWeek = shiftDateByDays(date, -7);
-  const nextWeek = shiftDateByDays(date, 7);
+  const today = dateToIso(new Date());
+  const minRouteDate = shiftDateByDays(today, -7);
+  const maxRouteDate = shiftDateByDays(today, 7);
+  const previousDay = shiftDateByDays(date, -1);
+  const nextDay = shiftDateByDays(date, 1);
 
   const selectedStaff = useMemo(
     () => staff.find((member) => member.staff_id === selectedStaffId),
@@ -308,13 +308,13 @@ export default function App() {
               <View style={styles.dateNavigator}>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="На неделю назад"
-                  accessibilityState={{ disabled: previousWeek < MIN_ROUTE_DATE }}
-                  disabled={previousWeek < MIN_ROUTE_DATE}
-                  onPress={() => setDate(previousWeek)}
+                  accessibilityLabel="Предыдущий день"
+                  accessibilityState={{ disabled: previousDay < minRouteDate }}
+                  disabled={previousDay < minRouteDate}
+                  onPress={() => setDate(previousDay)}
                   style={[
                     styles.dateStepButton,
-                    previousWeek < MIN_ROUTE_DATE && styles.buttonDisabled,
+                    previousDay < minRouteDate && styles.buttonDisabled,
                   ]}
                 >
                   <Text style={styles.dateStepLabel}>‹</Text>
@@ -334,13 +334,13 @@ export default function App() {
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="На неделю вперёд"
-                  accessibilityState={{ disabled: nextWeek > MAX_ROUTE_DATE }}
-                  disabled={nextWeek > MAX_ROUTE_DATE}
-                  onPress={() => setDate(nextWeek)}
+                  accessibilityLabel="Следующий день"
+                  accessibilityState={{ disabled: nextDay > maxRouteDate }}
+                  disabled={nextDay > maxRouteDate}
+                  onPress={() => setDate(nextDay)}
                   style={[
                     styles.dateStepButton,
-                    nextWeek > MAX_ROUTE_DATE && styles.buttonDisabled,
+                    nextDay > maxRouteDate && styles.buttonDisabled,
                   ]}
                 >
                   <Text style={styles.dateStepLabel}>›</Text>
@@ -483,8 +483,8 @@ export default function App() {
                 mode="date"
                 display="spinner"
                 onChange={onDatePickerChange}
-                minimumDate={new Date(1900, 0, 1)}
-                maximumDate={new Date(2100, 11, 31)}
+                minimumDate={isoToDate(minRouteDate)}
+                maximumDate={isoToDate(maxRouteDate)}
               />
               <View style={styles.dateSheetActions}>
                 <Pressable
@@ -512,8 +512,8 @@ export default function App() {
           mode="date"
           display="default"
           onChange={onDatePickerChange}
-          minimumDate={new Date(1900, 0, 1)}
-          maximumDate={new Date(2100, 11, 31)}
+          minimumDate={isoToDate(minRouteDate)}
+          maximumDate={isoToDate(maxRouteDate)}
         />
       ) : null}
     </SafeAreaView>

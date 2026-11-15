@@ -16,13 +16,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { screenTitles } from "../../shared/config/nav";
 import { useDispatchData } from "../../features/dispatch/DispatchDataContext";
 
-const MIN_PLAN_DATE = "1900-01-01";
-const MAX_PLAN_DATE = "2100-12-31";
-
 function addDays(date: string, days: number) {
   const shifted = new Date(`${date}T00:00:00Z`);
   shifted.setUTCDate(shifted.getUTCDate() + days);
   return shifted.toISOString().slice(0, 10);
+}
+
+function dateToIso(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 interface HeaderProps {
@@ -89,8 +93,11 @@ export function Header({ onHelp, onOpenOrder }: HeaderProps) {
     month: "long",
     timeZone: "UTC",
   });
-  const previousWeek = addDays(date, -7);
-  const nextWeek = addDays(date, 7);
+  const today = dateToIso(new Date());
+  const minPlanDate = addDays(today, -7);
+  const maxPlanDate = addDays(today, 7);
+  const previousDay = addDays(date, -1);
+  const nextDay = addDays(date, 1);
 
   useEffect(() => {
     if (!notificationsOpen) return;
@@ -137,10 +144,10 @@ export function Header({ onHelp, onOpenOrder }: HeaderProps) {
         >
           <button
             className="icon-button date-step-button"
-            aria-label="На неделю назад"
-            title="На неделю назад"
-            disabled={previousWeek < MIN_PLAN_DATE}
-            onClick={() => selectDate(previousWeek)}
+            aria-label="Предыдущий день"
+            title="Предыдущий день"
+            disabled={previousDay < minPlanDate}
+            onClick={() => selectDate(previousDay)}
           >
             <ChevronLeft size={17} />
           </button>
@@ -151,8 +158,8 @@ export function Header({ onHelp, onOpenOrder }: HeaderProps) {
             <input
               type="date"
               aria-label="Выбрать дату плана"
-              min={MIN_PLAN_DATE}
-              max={MAX_PLAN_DATE}
+              min={minPlanDate}
+              max={maxPlanDate}
               value={date}
               onChange={(event) => {
                 if (event.target.value) selectDate(event.target.value);
@@ -161,10 +168,10 @@ export function Header({ onHelp, onOpenOrder }: HeaderProps) {
           </label>
           <button
             className="icon-button date-step-button"
-            aria-label="На неделю вперёд"
-            title="На неделю вперёд"
-            disabled={nextWeek > MAX_PLAN_DATE}
-            onClick={() => selectDate(nextWeek)}
+            aria-label="Следующий день"
+            title="Следующий день"
+            disabled={nextDay > maxPlanDate}
+            onClick={() => selectDate(nextDay)}
           >
             <ChevronRight size={17} />
           </button>
