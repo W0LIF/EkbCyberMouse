@@ -5,9 +5,13 @@ import { PageIntro } from "../shared/ui/PageIntro";
 
 interface RisksPageProps {
   openOrder: (orderId: string) => void;
+  showOnlyUnassigned?: boolean;
 }
 
-export default function RisksPage({ openOrder }: RisksPageProps) {
+export default function RisksPage({
+  openOrder,
+  showOnlyUnassigned = false,
+}: RisksPageProps) {
   const { plan, orders, staff, loading, replanning, error, rebuildPlan } =
     useDispatchData();
   const orderById = new Map(orders.map((order) => [order.order_id, order]));
@@ -27,10 +31,14 @@ export default function RisksPage({ openOrder }: RisksPageProps) {
   return (
     <div className="screen">
       <PageIntro
-        eyebrow="ТРЕБУЮТ ВНИМАНИЯ"
+        eyebrow={showOnlyUnassigned ? "ТРЕБУЮТ НАЗНАЧЕНИЯ" : "ТРЕБУЮТ ВНИМАНИЯ"}
         eyebrowTone="warn"
-        title="Риски и нераспределённые"
-        subtitle={`${unassigned.length} нераспределённых · ${lateRisks.length} рисков`}
+        title={showOnlyUnassigned ? "Нераспределённые наряды" : "Риски и нераспределённые"}
+        subtitle={
+          showOnlyUnassigned
+            ? `${unassigned.length} нарядов ожидают назначения`
+            : `${unassigned.length} нераспределённых · ${lateRisks.length} рисков`
+        }
         actions={
           <Button
             variant="secondary"
@@ -43,9 +51,15 @@ export default function RisksPage({ openOrder }: RisksPageProps) {
         }
       />
       {error && <div className="card" role="alert">{error}</div>}
-      {loading && <div className="card" role="status">Загружаем риски…</div>}
-      <div className="two-cols">
-        <section className="card issue-column">
+      {loading && (
+        <div className="card" role="status">
+          {showOnlyUnassigned
+            ? "Загружаем нераспределённые наряды…"
+            : "Загружаем риски…"}
+        </div>
+      )}
+      <div className={`two-cols${showOnlyUnassigned ? " unassigned-only" : ""}`}>
+        {!showOnlyUnassigned && <section className="card issue-column">
           <div className="column-title">
             <span className="risk-icon">
               <Clock3 size={19} />
@@ -83,7 +97,7 @@ export default function RisksPage({ openOrder }: RisksPageProps) {
           {!loading && lateRisks.length === 0 && (
             <p className="empty-state">Активных рисков опоздания нет.</p>
           )}
-        </section>
+        </section>}
         <section className="card issue-column">
           <div className="column-title">
             <span className="loose-icon">

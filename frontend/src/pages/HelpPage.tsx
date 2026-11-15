@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import {
   BarChart3,
   ChevronDown,
@@ -9,28 +9,104 @@ import {
   Search,
   Smartphone,
 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "../shared/ui/Button";
 
+const categories = [
+  { id: "map", title: "Карта и маршруты", Icon: Map },
+  { id: "planning", title: "Планирование", Icon: BarChart3 },
+  { id: "orders", title: "Работа с нарядами", Icon: ListTodo },
+  { id: "mobile", title: "Мобильное приложение", Icon: Smartphone },
+] as const;
+
+type HelpCategory = (typeof categories)[number]["id"];
+
+const articles: {
+  question: string;
+  answer: string;
+  category: HelpCategory;
+}[] = [
+  {
+    question: "Как посмотреть маршруты сотрудников?",
+    answer:
+      "Откройте «Карту маршрутов». Выберите сотрудника в списке справа, чтобы выделить его маршрут. Нажмите на точку наряда или сервисного центра, чтобы увидеть подробности.",
+    category: "map",
+  },
+  {
+    question: "Как пересчитать план?",
+    answer:
+      "На странице карты или плана нажмите «Пересчитать план». Backend заново рассчитает маршруты для выбранной даты; начатые и выполненные остановки сохраняются согласно статусам плана.",
+    category: "planning",
+  },
+  {
+    question: "Что показывает сценарный анализ?",
+    answer:
+      "Он сравнивает текущий план с вариантом при сокращении числа сотрудников и/или увеличении запаса оборудования. Результат сценария не публикуется и не изменяет текущий план.",
+    category: "planning",
+  },
+  {
+    question: "Почему наряд не распределён?",
+    answer:
+      "Откройте раздел «Нераспределённые»: рядом с нарядом указана причина. В карточке наряда можно проверить слот, тип работ и другие переданные данные.",
+    category: "orders",
+  },
+  {
+    question: "Как создать новый наряд?",
+    answer:
+      "На карте нажмите кнопку создания наряда, выберите существующий наряд как шаблон и задайте слот. После отправки backend попробует включить новый наряд в план; если подходящего маршрута нет, он останется нераспределённым.",
+    category: "orders",
+  },
+  {
+    question: "Как пользоваться приложением сотрудника?",
+    answer:
+      "В отдельном приложении выберите сотрудника и дату, откройте маршрут и отмечайте звонок абоненту, прибытие и завершение визита. Завершение доступно после отметки прибытия.",
+    category: "mobile",
+  },
+];
+
 export default function HelpPage() {
-  const [open, setOpen] = useState(0);
-  const faq = [
-    [
-      "Как пересчитать план?",
-      "Откройте карту или Gantt и нажмите «Обновить». Система сохранит ручные назначения.",
-    ],
-    [
-      "Почему наряд не распределён?",
-      "Откройте карточку наряда: система покажет недостающий допуск, технологию, время или АО.",
-    ],
-    [
-      "Как передать группу ПГП?",
-      "В разделе ПГП выберите группу и подтвердите передачу в станционное подразделение.",
-    ],
-    [
-      "Как изменить границы смены?",
-      "Откройте профиль сотрудника и измените график. Новый график учтётся при пересчёте.",
-    ],
-  ];
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  const [selectedCategory, setSelectedCategory] =
+    useState<HelpCategory | null>(null);
+  const [openQuestion, setOpenQuestion] = useState<string | null>(null);
+  const term = query.trim().toLocaleLowerCase("ru");
+  const visibleArticles = useMemo(
+    () =>
+      articles.filter((article) => {
+        const matchesCategory =
+          selectedCategory === null || article.category === selectedCategory;
+        const matchesSearch =
+          !term ||
+          `${article.question} ${article.answer}`
+            .toLocaleLowerCase("ru")
+            .includes(term);
+        return matchesCategory && matchesSearch;
+      }),
+    [selectedCategory, term],
+  );
+
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const value = query.trim();
+    setSearchParams(value ? { q: value } : {});
+    setSelectedCategory(null);
+    setOpenQuestion(null);
+  }
+
+  function selectCategory(category: HelpCategory) {
+    setSelectedCategory((current) => (current === category ? null : category));
+    setOpenQuestion(null);
+    document
+      .getElementById("help-articles")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function showArticles() {
+    document
+      .getElementById("help-articles")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <div className="screen">
@@ -38,56 +114,83 @@ export default function HelpPage() {
         <div className="eyebrow">СПРАВОЧНЫЙ ЦЕНТР</div>
         <h1>Чем можем помочь?</h1>
         <p>Инструкции по работе с планом, нарядами и мобильным приложением</p>
-        <div className="help-hero-search">
+        <form className="help-hero-search" onSubmit={submitSearch}>
           <Search size={19} />
-          <input placeholder="Введите вопрос или название функции…" />
-          <kbd>Ctrl + K</kbd>
-        </div>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Введите вопрос или название функции…"
+            aria-label="Поиск по инструкциям"
+          />
+          <button type="submit">Найти</button>
+        </form>
       </div>
       <div className="help-categories">
-        {[
-          [Map, "Карта и маршруты", "7 статей"],
-          [BarChart3, "Планирование", "12 статей"],
-          [ListTodo, "Работа с нарядами", "9 статей"],
-          [Smartphone, "Мобильное приложение", "6 статей"],
-        ].map(([Icon, title, count]) => {
-          const CategoryIcon = Icon as typeof Map;
+        {categories.map(({ id, title, Icon }) => {
+          const count = articles.filter((article) => article.category === id).length;
           return (
-            <button className="help-category card" key={title as string}>
+            <button
+              className={`help-category card${selectedCategory === id ? " active" : ""}`}
+              key={id}
+              aria-pressed={selectedCategory === id}
+              onClick={() => selectCategory(id)}
+            >
               <span>
-                <CategoryIcon size={21} />
+                <Icon size={21} />
               </span>
-              <b>{title as string}</b>
-              <small>{count as string}</small>
+              <b>{title}</b>
+              <small>{count} {count === 1 ? "инструкция" : "инструкции"}</small>
               <ChevronRight size={16} />
             </button>
           );
         })}
       </div>
       <div className="help-content-grid">
-        <section className="card faq">
-          <h2>Частые вопросы</h2>
-          {faq.map((item, index) => (
-            <button key={item[0]} onClick={() => setOpen(open === index ? -1 : index)}>
+        <section className="card faq" id="help-articles">
+          <h2>
+            {selectedCategory
+              ? categories.find((item) => item.id === selectedCategory)?.title
+              : "Частые вопросы"}
+          </h2>
+          {visibleArticles.map((article) => (
+            <button
+              key={article.question}
+              aria-expanded={openQuestion === article.question}
+              onClick={() =>
+                setOpenQuestion((current) =>
+                  current === article.question ? null : article.question,
+                )
+              }
+            >
               <span>
-                <b>{item[0]}</b>
-                {open === index && <p>{item[1]}</p>}
+                <b>{article.question}</b>
+                {openQuestion === article.question && <p>{article.answer}</p>}
               </span>
-              <ChevronDown className={open === index ? "rotated" : ""} size={17} />
+              <ChevronDown
+                className={openQuestion === article.question ? "rotated" : ""}
+                size={17}
+              />
             </button>
           ))}
+          {visibleArticles.length === 0 && (
+            <p className="help-no-results">
+              По запросу «{query}» ничего не найдено. Попробуйте изменить запрос.
+            </p>
+          )}
         </section>
         <aside className="support-card card">
           <span>
             <CircleHelp size={27} />
           </span>
           <h2>Нужна помощь специалиста?</h2>
-          <p>Создайте тикет. Среднее время ответа IT-поддержки — 12 минут.</p>
-          <Button>Создать тикет</Button>
-          <Button variant="secondary">Открыть документацию</Button>
-          <div>
+          <p>
+            Создание обращений в IT Service Desk пока не подключено. По вопросам
+            доступа обратитесь к администратору сервисного центра.
+          </p>
+          <Button onClick={showArticles}>Открыть инструкции</Button>
+          <div className="support-unavailable">
             <i />
-            Поддержка работает круглосуточно
+            IT Service Desk не подключён
           </div>
         </aside>
       </div>

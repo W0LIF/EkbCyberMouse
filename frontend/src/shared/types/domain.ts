@@ -5,6 +5,7 @@ export type Screen =
   | "plan"
   | "orders"
   | "risks"
+  | "unassigned"
   | "pgp"
   | "people"
   | "centers"

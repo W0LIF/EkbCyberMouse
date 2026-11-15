@@ -55,7 +55,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         </button>
       </div>
       <nav>
-        {navItems.map((item, index) => {
+        {navItems.map((item) => {
           const Icon = iconMap[item.icon] ?? Map;
           const badge =
             item.label === "Риски"
@@ -67,10 +67,9 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
                 : item.label === "ПГП"
                   ? plan?.pgp_groups.length
                   : undefined;
-          const isDup = index === 4 && location.pathname === "/risks";
-          const isActive = location.pathname === `/${item.id}` && !isDup;
+          const isActive = location.pathname === `/${item.id}`;
           return (
-            <Tooltip text={collapsed ? item.label : ""} key={`${item.label}-${index}`}>
+            <Tooltip text={collapsed ? item.label : ""} key={item.id}>
               <button
                 className={isActive ? "active" : ""}
                 onClick={() => navigate(`/${item.id}`)}

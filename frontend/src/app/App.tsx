@@ -96,7 +96,10 @@ export default function App() {
               onToggleCollapsed={() => setCollapsed(!collapsed)}
             />
             <div className="app-main">
-              <Header onHelp={() => setHelp(true)} />
+              <Header
+                onHelp={() => setHelp(true)}
+                onOpenOrder={openOrder}
+              />
               <div className="content">
                 <Routes>
                   <Route path="/" element={<Navigate to="/map" replace />} />
@@ -104,6 +107,7 @@ export default function App() {
                   <Route path="/plan" element={<PlanPage setModal={setModal} openOrder={openOrder} />} />
                   <Route path="/orders" element={<OrdersPage openOrder={openOrder} openCreate={() => setNewOrderOpen(true)} />} />
                   <Route path="/risks" element={<RisksPage openOrder={openOrder} />} />
+                  <Route path="/unassigned" element={<RisksPage openOrder={openOrder} showOnlyUnassigned />} />
                   <Route path="/pgp" element={<PgpPage />} />
                   <Route path="/people" element={<PeoplePage />} />
                   <Route path="/centers" element={<CentersPage />} />
@@ -132,7 +136,15 @@ export default function App() {
               close={() => setModal(null)}
             />
           )}
-          {help && <HelpPanel close={() => setHelp(false)} />}
+          {help && (
+            <HelpPanel
+              close={() => setHelp(false)}
+              startTour={() => {
+                setHelp(false);
+                setTour(true);
+              }}
+            />
+          )}
           {tour && (
             <Onboarding
               finish={() => {

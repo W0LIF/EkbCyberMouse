@@ -1,14 +1,18 @@
-import { useMemo } from "react";
 import { Building2, Info, MapPin, RefreshCw } from "lucide-react";
 import { useDispatchData } from "../features/dispatch/DispatchDataContext";
-import type { ApiRoute } from "../shared/api";
+import type { ApiOrder, ApiRoute } from "../shared/api";
 import { Button } from "../shared/ui/Button";
 import { PageIntro } from "../shared/ui/PageIntro";
+import { RouteMap } from "./RouteMap";
+import "leaflet/dist/leaflet.css";
 
 const colors = ["#7C3AED", "#2563EB", "#FF6B00", "#DC2626", "#0891B2", "#16A34A"];
 
 export default function CentersPage() {
   const { centers, staff, orders, plan, loading, error, refresh } = useDispatchData();
+  const noOrders: ApiOrder[] = [];
+  const noRoutes: ApiRoute[] = [];
+  const noOrderIds = new Set<string>();
   const routesByCenter = new Map<string, ApiRoute[]>();
   for (const route of plan?.routes ?? []) {
     routesByCenter.set(
@@ -16,25 +20,6 @@ export default function CentersPage() {
       [...(routesByCenter.get(route.service_center_id) ?? []), route],
     );
   }
-  const bounds = useMemo(() => {
-    if (!centers.length) return { minLat: 56.7, maxLat: 57, minLon: 60.4, maxLon: 60.8 };
-    return {
-      minLat: Math.min(...centers.map((center) => center.lat)),
-      maxLat: Math.max(...centers.map((center) => center.lat)),
-      minLon: Math.min(...centers.map((center) => center.lon)),
-      maxLon: Math.max(...centers.map((center) => center.lon)),
-    };
-  }, [centers]);
-
-  function centerPosition(lat: number, lon: number) {
-    const latRange = Math.max(bounds.maxLat - bounds.minLat, 0.001);
-    const lonRange = Math.max(bounds.maxLon - bounds.minLon, 0.001);
-    return {
-      left: `${10 + ((lon - bounds.minLon) / lonRange) * 80}%`,
-      top: `${18 + ((bounds.maxLat - lat) / latRange) * 65}%`,
-    };
-  }
-
   return (
     <div className="screen">
       <PageIntro
@@ -107,30 +92,24 @@ export default function CentersPage() {
           })}
         </div>
         <div className="coverage-map card">
-          <div className="coverage-roads" />
+          <RouteMap
+            orders={noOrders}
+            centers={centers}
+            routes={noRoutes}
+            routeColors={colors}
+            selectedStaffId={null}
+            pgpOrderIds={noOrderIds}
+            riskyOrderIds={noOrderIds}
+            hideCompleted={false}
+            openOrder={() => undefined}
+          />
           <div className="coverage-head">
             <b>Сервисные центры</b>
-            <span>Координаты из справочника API</span>
+            <span>Координаты из API · нажмите на точку для подробностей</span>
           </div>
-          {centers.map((center, index) => (
-            <div
-              className="coverage-zone"
-              key={center.service_center_id}
-              style={{
-                ...centerPosition(center.lat, center.lon),
-                borderColor: colors[index % colors.length],
-                background: `${colors[index % colors.length]}18`,
-              }}
-            >
-              <span style={{ background: colors[index % colors.length] }}>
-                <Building2 size={14} />
-              </span>
-              <b>{center.name}</b>
-            </div>
-          ))}
           <div className="coverage-legend">
             <Info size={14} />
-            Положение центров соответствует координатам API; зоны ответственности не заданы
+            Положение и карточки СЦ соответствуют основной карте маршрутов
           </div>
         </div>
       </div>
