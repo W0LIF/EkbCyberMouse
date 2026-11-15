@@ -104,6 +104,33 @@ CREATE INDEX idx_orders_slot ON orders(slot_start);
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_orders_node_ts ON orders(access_node_id, registered_at) WHERE access_node_id IS NOT NULL;
 
+-- Фактические длительности завершенных работ для прогноза по истории
+CREATE TABLE IF NOT EXISTS order_facts (
+    order_id VARCHAR(20) PRIMARY KEY,
+    work_type_code VARCHAR(50) NOT NULL,
+    technology VARCHAR(20) NOT NULL,
+    actual_duration_min INT NOT NULL CHECK (actual_duration_min > 0),
+    occurred_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_order_facts_type_technology
+    ON order_facts(work_type_code, technology);
+
+-- Действия отдельного мобильного приложения сотрудника
+CREATE TABLE IF NOT EXISTS mobile_visit_actions (
+    id BIGSERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    staff_id VARCHAR(10) NOT NULL,
+    order_id VARCHAR(20) NOT NULL,
+    action VARCHAR(20) NOT NULL
+        CHECK (action IN ('CALL_CUSTOMER', 'ARRIVED', 'COMPLETED')),
+    occurred_at TIMESTAMPTZ NOT NULL,
+    UNIQUE (date, staff_id, order_id, action)
+);
+
+CREATE INDEX IF NOT EXISTS idx_mobile_visit_actions_route
+    ON mobile_visit_actions(date, staff_id);
+
 -- События
 CREATE TABLE events (
     id BIGSERIAL PRIMARY KEY,

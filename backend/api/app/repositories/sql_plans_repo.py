@@ -11,7 +11,9 @@ class SqlPlansRepo:
     def _parse_date(self, date_str: str):
         return datetime.strptime(date_str, "%Y-%m-%d").date()
 
-    async def save_version(self, date: str, plan: Plan) -> None:
+    async def save_version(
+        self, date: str, plan: Plan, *, commit: bool = True
+    ) -> None:
         d = self._parse_date(date)
         await self.session.execute(
             text("""
@@ -23,7 +25,8 @@ class SqlPlansRepo:
             {"d": d, "v": plan.plan_version, "evid": plan.based_on_event_id, 
              "as_of": plan.as_of, "payload": plan.model_dump_json(), "ms": plan.computation_ms}
         )
-        await self.session.commit()
+        if commit:
+            await self.session.commit()
 
     async def get_latest(self, date: str) -> dict | None:
         d = self._parse_date(date)

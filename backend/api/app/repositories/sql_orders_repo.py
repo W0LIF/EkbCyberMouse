@@ -8,13 +8,20 @@ class SqlOrdersRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def upsert_many(self, date: str, orders: list[Order]) -> int:
+    async def upsert_many(
+        self,
+        date: str,
+        orders: list[Order],
+        *,
+        replace_existing: bool = True,
+        commit: bool = True,
+    ) -> int:
         """Загружает наряды на день."""
-        # Удаляем старые наряды этого дня
-        await self.session.execute(
-            text("DELETE FROM orders WHERE order_id LIKE :prefix"),
-            {"prefix": f"ORD-{date.replace('-', '')}-%"}
-        )
+        if replace_existing:
+            await self.session.execute(
+                text("DELETE FROM orders WHERE order_id LIKE :prefix"),
+                {"prefix": f"ORD-{date.replace('-', '')}-%"}
+            )
         
         count = 0
         for o in orders:
@@ -22,7 +29,26 @@ class SqlOrdersRepo:
                 text("""
                     INSERT INTO orders (order_id, work_type_code, technology, building_id, address, lat, lon, building_type, requires_height, access_node_id, registered_at, slot_start, slot_end, latest_start, deadline, req_ont, req_router, req_stb, is_repeat, previous_order_id, status)
                     VALUES (:id, :wt, :tech, :bld, :addr, :lat, :lon, :b_type, :req_h, :node, :reg_at, :slot_s, :slot_e, :lat_s, :deadline, :req_ont, :req_router, :req_stb, :is_rep, :prev, 'pending')
-                    ON CONFLICT (order_id) DO NOTHING
+                    ON CONFLICT (order_id) DO UPDATE SET
+                        work_type_code = EXCLUDED.work_type_code,
+                        technology = EXCLUDED.technology,
+                        building_id = EXCLUDED.building_id,
+                        address = EXCLUDED.address,
+                        lat = EXCLUDED.lat,
+                        lon = EXCLUDED.lon,
+                        building_type = EXCLUDED.building_type,
+                        requires_height = EXCLUDED.requires_height,
+                        access_node_id = EXCLUDED.access_node_id,
+                        registered_at = EXCLUDED.registered_at,
+                        slot_start = EXCLUDED.slot_start,
+                        slot_end = EXCLUDED.slot_end,
+                        latest_start = EXCLUDED.latest_start,
+                        deadline = EXCLUDED.deadline,
+                        req_ont = EXCLUDED.req_ont,
+                        req_router = EXCLUDED.req_router,
+                        req_stb = EXCLUDED.req_stb,
+                        is_repeat = EXCLUDED.is_repeat,
+                        previous_order_id = EXCLUDED.previous_order_id
                 """),
                 {
                     "id": o.order_id, "wt": o.work_type_code, "tech": o.technology, "bld": o.building_id,
@@ -37,9 +63,38 @@ class SqlOrdersRepo:
                     "is_rep": o.is_repeat, "prev": o.previous_order_id
                 }
             )
+            fact = o.fact
+            if (
+                fact is not None
+                and fact.outcome == "COMPLETED"
+                and fact.actual_duration_min is not None
+                and fact.actual_duration_min > 0
+            ):
+                await self.session.execute(
+                    text("""
+                        INSERT INTO order_facts (
+                            order_id, work_type_code, technology,
+                            actual_duration_min, occurred_at
+                        )
+                        VALUES (:id, :wt, :tech, :duration, :occurred_at)
+                        ON CONFLICT (order_id) DO UPDATE SET
+                            work_type_code = EXCLUDED.work_type_code,
+                            technology = EXCLUDED.technology,
+                            actual_duration_min = EXCLUDED.actual_duration_min,
+                            occurred_at = EXCLUDED.occurred_at
+                    """),
+                    {
+                        "id": o.order_id,
+                        "wt": o.work_type_code,
+                        "tech": o.technology,
+                        "duration": fact.actual_duration_min,
+                        "occurred_at": fact.actual_start or o.registered_at,
+                    },
+                )
             count += 1
         
-        await self.session.commit()
+        if commit:
+            await self.session.commit()
         return count
 
     async def get_by_date(self, date: str) -> list[dict]:
@@ -56,6 +111,16 @@ class SqlOrdersRepo:
                 WHERE order_id LIKE :prefix
             """),
             {"prefix": f"ORD-{date_str}-%"}
+        )
+        return [dict(row) for row in result.mappings()]
+
+    async def get_duration_history(self) -> list[dict]:
+        result = await self.session.execute(
+            text("""
+                SELECT work_type_code, technology, actual_duration_min
+                FROM order_facts
+                WHERE actual_duration_min > 0
+            """)
         )
         return [dict(row) for row in result.mappings()]
 

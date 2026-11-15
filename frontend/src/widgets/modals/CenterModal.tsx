@@ -1,18 +1,51 @@
 import { useState } from "react";
-import { AlertTriangle, Check, CheckCircle2, Sparkles, X } from "lucide-react";
+import { AlertTriangle, Check, Sparkles, X } from "lucide-react";
 import type { ModalType } from "../../shared/types/domain";
 import { employees } from "../../shared/mock/employees";
+import { dispatchApi, type ApiScenarioResult } from "../../shared/api";
+import { useDispatchData } from "../../features/dispatch/DispatchDataContext";
 import { Button } from "../../shared/ui/Button";
 import { Chips } from "../../shared/ui/Chips";
 
 interface CenterModalProps {
   type: Exclude<ModalType, "order" | null>;
+  orderId: string | null;
   close: () => void;
-  setModal: (m: ModalType) => void;
 }
 
-export function CenterModal({ type, close, setModal }: CenterModalProps) {
-  const [staff, setStaff] = useState(3);
+export function CenterModal({ type, orderId, close }: CenterModalProps) {
+  const { date, staff: staffMembers, plan, orders } = useDispatchData();
+  const [staffReduction, setStaffReduction] = useState(3);
+  const maxStaffReduction = Math.max(0, staffMembers.length - 1);
+  const selectedStaffReduction = Math.min(staffReduction, maxStaffReduction);
+  const [extraEquipment, setExtraEquipment] = useState({
+    ONT: 0,
+    ROUTER: 0,
+    STB: 0,
+  });
+  const [scenario, setScenario] = useState<ApiScenarioResult | null>(null);
+  const [scenarioLoading, setScenarioLoading] = useState(false);
+  const [scenarioError, setScenarioError] = useState<string | null>(null);
+
+  async function analyzeScenario() {
+    setScenarioLoading(true);
+    setScenarioError(null);
+    try {
+      setScenario(
+        await dispatchApi.analyzeScenario(date, {
+          staff_reduction: selectedStaffReduction,
+          extra_equipment_capacity: extraEquipment,
+        }),
+      );
+    } catch (cause) {
+      setScenarioError(
+        cause instanceof Error ? cause.message : "Не удалось рассчитать сценарий",
+      );
+      setScenario(null);
+    } finally {
+      setScenarioLoading(false);
+    }
+  }
 
   if (type === "scenario")
     return (
@@ -22,54 +55,95 @@ export function CenterModal({ type, close, setModal }: CenterModalProps) {
           <div className="modal-head">
             <div>
               <span>СЦЕНАРНЫЙ АНАЛИЗ</span>
-              <h2>Что если −{staff} сотрудника?</h2>
+              <h2>Вариант изменения ресурсов</h2>
             </div>
             <button onClick={close}>
               <X size={20} />
             </button>
           </div>
-          <p>Посмотрите, как изменение числа сотрудников повлияет на план до его публикации.</p>
+          <p>Сравните новый расчёт с текущим планом. Сценарий не меняет опубликованные данные.</p>
           <div className="slider-label">
-            <span>Сотрудников на линии</span>
-            <b>{40 - staff} из 40</b>
+            <span>Исключить сотрудников</span>
+            <b>{selectedStaffReduction} из {staffMembers.length}</b>
           </div>
           <input
             className="slider"
             type="range"
             min="0"
-            max="10"
-            value={staff}
-            onChange={(e) => setStaff(+e.target.value)}
+            max={maxStaffReduction}
+            value={selectedStaffReduction}
+            onChange={(e) => {
+              setStaffReduction(+e.target.value);
+              setScenario(null);
+            }}
           />
-          <div className="scenario-kpis">
-            <div>
-              <span>В слот</span>
-              <b>{94 - staff * 2}%</b>
-              <small>−{staff * 2}.0%</small>
-            </div>
-            <div>
-              <span>Пробег</span>
-              <b>{428 + staff * 18} км</b>
-              <small>+{staff * 18} км</small>
-            </div>
-            <div>
-              <span>Наряды с риском</span>
-              <b>{8 + staff * 3}</b>
-              <small>+{staff * 3}</small>
-            </div>
+          <div className="scenario-stock-inputs">
+            {(["ONT", "ROUTER", "STB"] as const).map((equipment) => (
+              <label key={equipment}>
+                Доп. {equipment}
+                <input
+                  type="number"
+                  min="0"
+                  value={extraEquipment[equipment]}
+                  onChange={(event) => {
+                    setExtraEquipment({
+                      ...extraEquipment,
+                      [equipment]: Math.max(0, Number(event.target.value)),
+                    });
+                    setScenario(null);
+                  }}
+                />
+              </label>
+            ))}
           </div>
-          <div className="impact">
-            <AlertTriangle size={18} />
-            <span>
-              <b>Высокое влияние на план</b>
-              <small>{staff + 4} нарядов потребуют переноса на следующий день</small>
-            </span>
-          </div>
+          {scenarioError && <p className="scenario-error" role="alert">{scenarioError}</p>}
+          {scenario ? (
+            <div className="scenario-kpis">
+              <div>
+                <span>В слот</span>
+                <b>{scenario.scenario.in_slot_percent}%</b>
+                <small>Было {scenario.baseline.in_slot_percent}%</small>
+              </div>
+              <div>
+                <span>Пробег</span>
+                <b>{scenario.scenario.travel_km} км</b>
+                <small>Было {scenario.baseline.travel_km} км</small>
+              </div>
+              <div>
+                <span>Наряды с риском</span>
+                <b>{scenario.scenario.risk_orders}</b>
+                <small>Было {scenario.baseline.risk_orders}</small>
+              </div>
+              <div>
+                <span>Не распределено</span>
+                <b>{scenario.scenario.unassigned}</b>
+                <small>Было {scenario.baseline.unassigned}</small>
+              </div>
+            </div>
+          ) : (
+            <div className="impact">
+              <AlertTriangle size={18} />
+              <span>
+                <b>Расчёт будет выполнен на сервере</b>
+                <small>Текущий план не изменится</small>
+              </span>
+            </div>
+          )}
+          {scenario?.unassigned_order_ids.length ? (
+            <p className="scenario-unassigned">
+              Не распределены: {scenario.unassigned_order_ids.join(", ")}
+            </p>
+          ) : null}
           <div className="modal-actions">
             <Button variant="secondary" onClick={close}>
               Закрыть
             </Button>
-            <Button>Сохранить сценарий</Button>
+            <Button
+              onClick={() => void analyzeScenario()}
+              disabled={scenarioLoading || staffMembers.length === 0}
+            >
+              {scenarioLoading ? "Рассчитываем…" : "Рассчитать сценарий"}
+            </Button>
           </div>
         </div>
       </>
@@ -120,7 +194,17 @@ export function CenterModal({ type, close, setModal }: CenterModalProps) {
       </>
     );
 
-  /* explain */
+  const order = orders.find((item) => item.order_id === orderId);
+  const route = plan?.routes.find((item) =>
+    item.stops.some((stop) => stop.type === "VISIT" && stop.order_id === orderId),
+  );
+  const visit = route?.stops.find(
+    (stop) => stop.type === "VISIT" && stop.order_id === orderId,
+  );
+  const assignedStaff = route
+    ? staffMembers.find((person) => person.staff_id === route.staff_id)
+    : undefined;
+
   return (
     <>
       <div className="overlay" onClick={close} />
@@ -128,44 +212,34 @@ export function CenterModal({ type, close, setModal }: CenterModalProps) {
         <div className="modal-head">
           <div>
             <span>ОБЪЯСНИМОСТЬ НАЗНАЧЕНИЯ</span>
-            <h2>Почему наряд ORD00142 назначен Иванову И. И.</h2>
+            <h2>Почему назначен {order?.order_id ?? "наряд"}</h2>
           </div>
           <button onClick={close}>
             <X size={20} />
           </button>
         </div>
-        <p>Алгоритм сравнил 18 доступных сотрудников по 12 параметрам.</p>
+        <p>
+          {route
+            ? `Сотрудник: ${assignedStaff?.display_name ?? route.staff_id}.`
+            : "Наряд не назначен в текущем плане."}
+        </p>
         <div className="match-score">
           <span>
             <Sparkles size={20} />
           </span>
           <div>
-            <b>Совпадение 96%</b>
-            <small>Лучший кандидат на момент назначения</small>
+            <b>{order?.address ?? "Нет данных о наряде"}</b>
+            <small>Обоснование текущего назначения</small>
           </div>
         </div>
         <div className="reasons">
-          {[
-            "Профиль: 3ЛТП",
-            "Технология: PON",
-            "Ближайший к адресу (2.3 км от предыдущей точки)",
-            "Окно в слоте: 47 минут свободно",
-            "В рюкзаке: ONT ×2, роутер ×1",
-          ].map((x) => (
-            <div key={x}>
-              <CheckCircle2 size={19} />
-              <span>{x}</span>
-            </div>
-          ))}
-          <div className="warning">
-            <AlertTriangle size={19} />
-            <span>Не нужен допуск к высоте</span>
-          </div>
+          {visit?.explanation ? (
+            <p>{visit.explanation}</p>
+          ) : (
+            <p>Обоснование отсутствует: наряд не назначен или план был построен старой версией алгоритма.</p>
+          )}
         </div>
         <div className="modal-actions">
-          <Button variant="secondary" onClick={() => setModal("reassign")}>
-            Выбрать другого
-          </Button>
           <Button onClick={close}>Понятно</Button>
         </div>
       </div>

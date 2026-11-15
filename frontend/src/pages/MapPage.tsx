@@ -1,153 +1,114 @@
 import { useState } from "react";
 import {
   AlertTriangle,
-  Building2,
   ChevronDown,
   ChevronRight,
-  Clock3,
   Layers3,
   Plus,
   RefreshCw,
 } from "lucide-react";
-import type { ModalType } from "../shared/types/domain";
-import { employees } from "../shared/mock/employees";
-import { centers } from "../shared/mock/centers";
 import { Button } from "../shared/ui/Button";
 import { Tooltip } from "../shared/ui/Tooltip";
 import { PageIntro } from "../shared/ui/PageIntro";
 import { Chips } from "../shared/ui/Chips";
 import { useToast } from "../features/toast/ToastProvider";
+import { useDispatchData } from "../features/dispatch/DispatchDataContext";
+import { RouteMap } from "./RouteMap";
+import "leaflet/dist/leaflet.css";
 
 interface MapPageProps {
-  setModal: (m: ModalType) => void;
+  openOrder: (orderId: string) => void;
+  openCreate: () => void;
 }
 
-export default function MapPage({ setModal }: MapPageProps) {
-  const [active, setActive] = useState(0);
+export default function MapPage({ openOrder, openCreate }: MapPageProps) {
+  const [activeStaffId, setActiveStaffId] = useState<string | null>(null);
   const [filter, setFilter] = useState("Все");
-  const [refreshing, setRefreshing] = useState(false);
+  const [hideCompleted, setHideCompleted] = useState(false);
   const { toast } = useToast();
+  const { date, plan, orders, staff, centers, loading, replanning, error, refresh } =
+    useDispatchData();
+  const staffById = new Map(staff.map((person) => [person.staff_id, person]));
+  const colors = ["#7C3AED", "#2563EB", "#FF6B00", "#DC2626", "#0891B2", "#16A34A"];
 
-  function refresh() {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      toast("План обновлён: изменения не требуются");
-    }, 800);
+  const routes = plan?.routes ?? [];
+  const visibleRoutes = routes.filter((route) => {
+    const person = staffById.get(route.staff_id);
+    if (filter === "3ЛТП") return person?.profiles.includes("LTP3");
+    if (filter === "Инсталляция") return person?.profiles.includes("INSTALL");
+    if (filter === "Высокий риск") {
+      return route.stops.some((stop) =>
+        plan?.alerts.some((alert) => alert.type === "LATE_RISK" && alert.order_id === stop.order_id),
+      );
+    }
+    if (filter === "ПГП") {
+      return plan?.pgp_groups.some((group) =>
+        group.order_ids.some((id) => route.stops.some((stop) => stop.order_id === id)),
+      );
+    }
+    return true;
+  });
+  const pgpOrderIds = new Set(
+    (plan?.pgp_groups ?? []).flatMap((group) => group.order_ids),
+  );
+  const riskyOrderIds = new Set(
+    (plan?.alerts ?? [])
+      .filter((alert) => alert.type === "LATE_RISK" && alert.status === "ACTIVE")
+      .flatMap((alert) => (alert.order_id ? [alert.order_id] : [])),
+  );
+
+  async function handleRefresh() {
+    if (await refresh()) toast("Данные диспетчерского плана обновлены");
   }
 
   return (
     <div className="screen map-screen">
       <PageIntro
-        eyebrow="ОПЕРАТИВНЫЙ КОНТРОЛЬ"
+        eyebrow={`ОПЕРАТИВНЫЙ КОНТРОЛЬ · ${date}`}
         title="Карта маршрутов"
-        subtitle="40 сотрудников на линии · 127 визитов сегодня"
+        subtitle={`${routes.length} маршрутов · ${plan?.summary?.visits_planned ?? 0} визитов`}
         live
       />
       <div className="map-layout">
         <div className="map-canvas">
           <div className="map-toolbar">
-            <Button variant="secondary" icon={<Layers3 size={16} />}>
-              Показать все
+            <Button variant="secondary" icon={<Layers3 size={16} />} onClick={() => setFilter("Все")}>
+              Все маршруты
             </Button>
-            <Button variant="ghost">Скрыть выполненные</Button>
-            <Button variant="ghost" icon={<AlertTriangle size={15} />}>
+            <Button
+              variant={hideCompleted ? "secondary" : "ghost"}
+              onClick={() => setHideCompleted((hidden) => !hidden)}
+            >
+              {hideCompleted ? "Показать выполненные" : "Скрыть выполненные"}
+            </Button>
+            <Button variant="ghost" icon={<AlertTriangle size={15} />} onClick={() => setFilter("Высокий риск")}>
               Только риски
             </Button>
             <span className="toolbar-divider" />
             <Button
               variant="ghost"
-              onClick={refresh}
-              icon={<RefreshCw className={refreshing ? "spin" : ""} size={16} />}
+              disabled={loading || replanning}
+              onClick={() => void handleRefresh()}
+              icon={<RefreshCw className={loading ? "spin" : ""} size={16} />}
             >
-              обновлено 3 сек назад
+              Обновить
             </Button>
           </div>
-          <div className="district d1">ВЕРХ-ИСЕТСКИЙ</div>
-          <div className="district d2">ЖЕЛЕЗНОДОРОЖНЫЙ</div>
-          <div className="district d3">КИРОВСКИЙ</div>
-          <div className="district d4">ЛЕНИНСКИЙ</div>
-          <div className="district d5">ОКТЯБРЬСКИЙ</div>
-          <div className="district d6">ЧКАЛОВСКИЙ</div>
-          <div className="district d7">ОРДЖОНИКИДЗЕВСКИЙ</div>
-          <svg className="roads" viewBox="0 0 900 600" preserveAspectRatio="none">
-            <g className="road-lines">
-              <path d="M-20 160 C160 120 230 310 420 270 S700 100 920 160" />
-              <path d="M80 -20 C130 180 310 160 330 620" />
-              <path d="M520 -20 C460 160 640 260 590 620" />
-              <path d="M-20 450 C200 390 360 510 920 410" />
-              <path d="M210 -20 C250 90 190 210 50 340" />
-            </g>
-            <g className="routes">
-              <path
-                className={active === 0 ? "route active" : "route"}
-                stroke={employees[0]?.color ?? "#7C3AED"}
-                d="M105 130 C190 185 235 250 340 320 S420 410 520 360"
-              />
-              <path
-                className={active === 1 ? "route active" : "route"}
-                stroke={employees[1]?.color ?? "#2563EB"}
-                d="M430 120 C490 190 450 270 570 300 S700 400 790 360"
-              />
-              <path
-                className={active === 2 ? "route active" : "route"}
-                stroke={employees[2]?.color ?? "#7C3AED"}
-                d="M170 480 C240 400 350 450 420 360 S560 200 670 175"
-              />
-              <path
-                className={active === 3 ? "route active" : "route"}
-                stroke={employees[3]?.color ?? "#FF6B00"}
-                d="M720 520 C680 430 590 420 570 300 S490 190 430 120"
-              />
-            </g>
-          </svg>
-          {[
-            ["18%", "23%", "1", employees[0]?.color ?? "#7C3AED"],
-            ["30%", "37%", "2", employees[0]?.color ?? "#7C3AED"],
-            ["44%", "52%", "3", employees[0]?.color ?? "#7C3AED"],
-            ["55%", "39%", "1", employees[1]?.color ?? "#2563EB"],
-            ["67%", "49%", "2", employees[1]?.color ?? "#2563EB"],
-            ["74%", "65%", "3", employees[1]?.color ?? "#2563EB"],
-            ["27%", "76%", "1", employees[2]?.color ?? "#7C3AED"],
-            ["42%", "64%", "2", employees[2]?.color ?? "#7C3AED"],
-            ["70%", "25%", "3", employees[2]?.color ?? "#7C3AED"],
-          ].map((p, i) => (
-            <button
-              key={i}
-              className="visit"
-              style={{ left: p[0], top: p[1], background: p[3] }}
-              onClick={() => setModal("order")}
-            >
-              {p[2]}
-            </button>
-          ))}
-          {centers.map((c, i) => (
-            <div
-              key={i}
-              className="center-marker"
-              style={{
-                left: ["15%", "48%", "78%", "25%", "53%"][i],
-                top: ["18%", "18%", "60%", "76%", "82%"][i],
-              }}
-            >
-              <span>
-                <Building2 size={15} />
-              </span>
-              <b>{c.name.replace("СЦ ", "")}</b>
-            </div>
-          ))}
-          <div className="risk-marker" style={{ left: "62%", top: "37%" }}>
-            <Clock3 size={15} />
-          </div>
-          <div className="pgp-marker" style={{ left: "38%", top: "58%" }}>
-            <AlertTriangle size={15} />
-          </div>
-          <div className="map-zoom">
-            <button>+</button>
-            <button>−</button>
-          </div>
+          {error && <div className="card" role="alert">{error}</div>}
+          {loading && <div className="card" role="status">Загружаем маршруты…</div>}
+          <RouteMap
+            orders={orders}
+            centers={centers}
+            routes={visibleRoutes}
+            routeColors={colors}
+            selectedStaffId={activeStaffId}
+            pgpOrderIds={pgpOrderIds}
+            riskyOrderIds={riskyOrderIds}
+            hideCompleted={hideCompleted}
+            openOrder={openOrder}
+          />
           <Tooltip text="Создать наряд вручную">
-            <button className="fab" onClick={() => setModal("order")}>
+            <button className="fab" onClick={openCreate}>
               <Plus size={24} />
             </button>
           </Tooltip>
@@ -160,42 +121,46 @@ export default function MapPage({ setModal }: MapPageProps) {
           />
           <div className="panel-heading">
             <b>Маршруты сотрудников</b>
-            <span>40 на линии</span>
+            <span>{visibleRoutes.length} на линии</span>
           </div>
           <div className="employee-list">
-            {employees.map((e, i) => (
+            {visibleRoutes.map((route, i) => {
+              const person = staffById.get(route.staff_id);
+              const visitCount = route.stops.filter((stop) => stop.type === "VISIT").length;
+              return (
               <button
-                className={`employee-card ${active === i ? "active" : ""}`}
-                key={e.name}
-                onClick={() => setActive(i)}
+                className={`employee-card ${activeStaffId === route.staff_id ? "active" : ""}`}
+                key={route.staff_id}
+                onClick={() => setActiveStaffId(route.staff_id)}
               >
                 <span
                   className="avatar"
-                  style={{ background: `${e.color}18`, color: e.color }}
+                  style={{ background: `${colors[i % colors.length]}18`, color: colors[i % colors.length] }}
                 >
-                  {e.initials}
+                  {(person?.display_name ?? route.staff_id).slice(0, 2)}
                 </span>
                 <span className="employee-info">
-                  <b>{e.name}</b>
+                  <b>{person?.display_name ?? route.staff_id}</b>
                   <small>
-                    {e.center} · {e.shift}
+                    {route.service_center_id} · {person?.shift.start}–{person?.shift.end}
                   </small>
                   <span className="progress">
                     <i
                       style={{
-                        width: `${e.load}%`,
-                        background: e.load > 85 ? "#FFB800" : e.color,
+                        width: `${Math.min(100, visitCount * 12)}%`,
+                        background: colors[i % colors.length],
                       }}
                     />
                   </span>
                 </span>
                 <span className="visits">
-                  <b>{e.visits}</b>
+                  <b>{visitCount}</b>
                   <small>визитов</small>
                 </span>
                 <ChevronRight size={16} />
               </button>
-            ))}
+              );
+            })}
           </div>
           <details className="legend">
             <summary>

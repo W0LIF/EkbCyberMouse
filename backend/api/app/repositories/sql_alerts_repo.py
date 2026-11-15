@@ -10,7 +10,9 @@ class SqlAlertsRepo:
     def _parse_date(self, date_str: str):
         return datetime.strptime(date_str, "%Y-%m-%d").date()
 
-    async def append(self, date: str, alert: Alert) -> None:
+    async def append(
+        self, date: str, alert: Alert, *, commit: bool = True
+    ) -> None:
         d = self._parse_date(date)
         await self.session.execute(
             text("""
@@ -23,7 +25,8 @@ class SqlAlertsRepo:
              "s_sid": alert.suggested_staff_id, "p_slot": alert.proposed_slot.model_dump_json() if alert.proposed_slot else None,
              "applied": alert.applied, "msg": alert.message}
         )
-        await self.session.commit()
+        if commit:
+            await self.session.commit()
 
     async def list_by_date(self, date: str) -> list[dict]:
         d = self._parse_date(date)

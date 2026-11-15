@@ -117,10 +117,15 @@ info:
     * Базовый путь `/api/v1`, порт по умолчанию `8080`, тело запросов и ответов — `application/json`.
       Сервис принимает тела до 100 МБ (матрица времени в пути — около 20 МБ).
     * Идентификаторы — строки, регистр значим. Значения перечислений — строго как в спецификации.
-    * Сервис игнорирует неизвестные поля во входных данных (например, `fact` в обучающих нарядах).
+    * Сервис игнорирует неизвестные поля во входных данных; заполненный `fact` сохраняется для
+      прогноза длительности. Итоговый `VISIT` по-прежнему соответствует нормативу H5.
       В ответах допускаются дополнительные поля, валидатор их не читает; обязательные поля и типы — строго.
     * Ошибки возвращаются в формате `ErrorResponse`; при ошибке состояние сервиса не меняется.
-    * Дополнительные эндпоинты (UI, сценарный анализ, объяснения) допускаются под любыми другими путями.
+    * Дополнительные эндпоинты (UI, сценарный анализ, объяснения и мобильные отметки сотрудника)
+      допускаются под любыми другими путями. Реализация предоставляет
+      `POST /api/v1/days/{date}/scenarios`,
+      `GET /api/v1/mobile/days/{date}/routes/{staff_id}` и
+      `POST /api/v1/mobile/days/{date}/routes/{staff_id}/visits/{order_id}/actions`.
     * Авторизация не требуется.
   contact:
     name: Организаторы кейса «Умная диспетчеризация выездных бригад»
@@ -138,6 +143,8 @@ tags:
     description: Построение и получение плана
   - name: events
     description: События в течение смены и перепланирование
+  - name: demo
+    description: Дополнительные методы демонстрационного интерфейса
 security: []
 
 paths:
@@ -197,6 +204,38 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '422':
           $ref: '#/components/responses/Unprocessable'
+
+  /api/v1/reference/staff:
+    get:
+      tags: [reference]
+      operationId: getStaff
+      summary: Получить список сотрудников
+      description: Дополнительный метод интерфейса; не заменяет загрузку справочников.
+      responses:
+        '200':
+          description: Список сотрудников
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Staff'
+
+  /api/v1/reference/service-centers:
+    get:
+      tags: [reference]
+      operationId: getServiceCenters
+      summary: Получить список сервисных центров
+      description: Дополнительный метод интерфейса; не заменяет загрузку справочников.
+      responses:
+        '200':
+          description: Список сервисных центров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceCenter'
 
   /api/v1/reference/travel-matrix:
     put:
@@ -272,6 +311,37 @@ paths:
         '422':
           $ref: '#/components/responses/Unprocessable'
 
+  /api/v1/demo/days/{date}:
+    parameters:
+      - $ref: '#/components/parameters/DateParam'
+    post:
+      tags: [demo]
+      operationId: prepareDemoDay
+      summary: Подготовить демонстрационный день
+      description: |
+        UI-only метод. При `SEED_DEMO_DATA=true` создаёт день на основе синтетического шаблона,
+        сдвинутого на указанную дату; существующий день не изменяет. Диапазон генерации:
+        `1900-01-01`—`2100-12-31`. Не используется оценочным оркестратором.
+      responses:
+        '200':
+          description: День уже готов или создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoDayResult'
+              example:
+                status: ready
+                date: '2028-11-15'
+                generated: true
+                counts:
+                  orders: 30
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/Unprocessable'
+
   /api/v1/days/{date}/plan:
     parameters:
       - $ref: '#/components/parameters/DateParam'
@@ -325,6 +395,26 @@ paths:
               examples:
                 plan:
                   $ref: '#/components/examples/PlanExample'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/days/{date}/orders:
+    parameters:
+      - $ref: '#/components/parameters/DateParam'
+    get:
+      tags: [day]
+      operationId: getDayOrders
+      summary: Получить наряды дня со статусами плана
+      description: Дополнительный метод интерфейса для списка нарядов и поиска.
+      responses:
+        '200':
+          description: Наряды загруженного дня
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderView'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -958,12 +1048,26 @@ components:
           description: Предыдущий наряд абонента для повторного обращения (может отсутствовать в наборе)
         fact:
           $ref: '#/components/schemas/OrderFact'
+    OrderView:
+      allOf:
+        - $ref: '#/components/schemas/Order'
+        - type: object
+          required: [status, assigned_staff_id]
+          properties:
+            status:
+              type: string
+              enum: [PLANNED, IN_PROGRESS, DONE, UNASSIGNED, CANCELLED, PGP, UNPLANNED]
+            assigned_staff_id:
+              type: string
+              nullable: true
     OrderFact:
       type: object
       nullable: true
       description: |
         Фактическое исполнение — только в обучающем наборе `orders_train.json` (история для
-        аналитики и прогноза длительности). В скрытом наборе отсутствует, сервис поле игнорирует
+        аналитики и прогноза длительности). Завершённые факты сохраняются для оценки длительности
+        при выборе маршрута; итоговая длительность визита остаётся равной `work_type.duration_min`
+        согласно H5.
       properties:
         outcome:
           type: string
@@ -1615,6 +1719,25 @@ components:
           additionalProperties:
             type: integer
             minimum: 0
+    DemoDayResult:
+      type: object
+      required: [status, date, generated, counts]
+      properties:
+        status:
+          type: string
+          enum: [ready]
+        date:
+          type: string
+          format: date
+        generated:
+          type: boolean
+        counts:
+          type: object
+          required: [orders]
+          properties:
+            orders:
+              type: integer
+              minimum: 0
     ErrorResponse:
       type: object
       required: [error]

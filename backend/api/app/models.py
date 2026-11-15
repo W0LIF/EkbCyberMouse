@@ -12,6 +12,7 @@ from pydantic import (
     NonNegativeInt,
     PlainSerializer,
     StringConstraints,
+    model_validator,
 )
 
 DateTime = Annotated[
@@ -204,6 +205,17 @@ class TravelMatrix(BaseModel):
     distances_m: list[list[NonNegativeInt]]
     hourly_factors: list[HourlyFactor] | None = None
 
+    @model_validator(mode="after")
+    def validate_dimensions(self) -> "TravelMatrix":
+        size = len(self.points)
+        for field_name, rows in (
+            ("durations_sec", self.durations_sec),
+            ("distances_m", self.distances_m),
+        ):
+            if len(rows) != size or any(len(row) != size for row in rows):
+                raise ValueError(f"{field_name} должен быть квадратной матрицей {size}x{size}")
+        return self
+
 
 class OrderFact(BaseModel):
     """Фактическое исполнение — только в обучающем наборе. Поле `fact` игнорируется сервисом."""
@@ -275,6 +287,7 @@ class RouteTotals(BaseModel):
 class Route(BaseModel):
     model_config = ConfigDict(extra="ignore")
     staff_id: str
+    team_staff_ids: list[str] | None = None
     service_center_id: str
     status: RouteStatus
     unavailable_from: DateTime | None = None
@@ -354,6 +367,65 @@ class Plan(BaseModel):
     cancelled: list[CancelledOrder]
     alerts: list[Alert]
     summary: PlanSummary | None = None
+
+
+MobileActionType = Literal["CALL_CUSTOMER", "ARRIVED", "COMPLETED"]
+
+
+class MobileActionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    action: MobileActionType
+    occurred_at: DateTime
+
+
+class MobileVisit(BaseModel):
+    order_id: str
+    address: str
+    lat: float
+    lon: float
+    work_type_code: WorkTypeCode
+    technology: Technology
+    scheduled_start: DateTime
+    scheduled_end: DateTime
+    status: StopStatus
+    call_at: DateTime | None = None
+    arrived_at: DateTime | None = None
+    completed_at: DateTime | None = None
+
+
+class MobileRoute(BaseModel):
+    date: str
+    staff_id: str
+    team_staff_ids: list[str] | None = None
+    staff_name: str | None = None
+    visits: list[MobileVisit]
+
+
+class ScenarioRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    staff_reduction: Annotated[int, Field(ge=0, le=100)] = 0
+    extra_equipment_capacity: Equipment = Field(
+        default_factory=lambda: Equipment(ONT=0, ROUTER=0, STB=0)
+    )
+    time_limit_sec: Annotated[int, Field(ge=1, le=30)] = 8
+
+
+class ScenarioMetrics(BaseModel):
+    orders_total: NonNegativeInt
+    visits_planned: NonNegativeInt
+    unassigned: NonNegativeInt
+    in_slot_percent: Annotated[float, Field(ge=0, le=100)]
+    travel_km: Annotated[float, Field(ge=0)]
+    restock_stops: NonNegativeInt
+    risk_orders: NonNegativeInt
+
+
+class ScenarioResponse(BaseModel):
+    date: str
+    removed_staff_ids: list[str]
+    baseline: ScenarioMetrics
+    scenario: ScenarioMetrics
+    unassigned_order_ids: list[str]
 
 
 class _EventBase(BaseModel):
@@ -457,6 +529,14 @@ class LoadResult(BaseModel):
     model_config = ConfigDict(extra="ignore")
     status: Literal["loaded"]
     counts: dict[str, NonNegativeInt] | None = None
+
+
+class DemoDayResult(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    status: Literal["ready"]
+    date: str
+    generated: bool
+    counts: dict[str, NonNegativeInt]
 
 
 class ErrorDetail(BaseModel):

@@ -1,6 +1,7 @@
-import { ChevronDown, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, ChevronRight, RefreshCw, SlidersHorizontal } from "lucide-react";
 import type { ModalType } from "../shared/types/domain";
-import { employees } from "../shared/mock/employees";
+import { useDispatchData } from "../features/dispatch/DispatchDataContext";
 import { Button } from "../shared/ui/Button";
 import { Tooltip } from "../shared/ui/Tooltip";
 import { PageIntro } from "../shared/ui/PageIntro";
@@ -9,29 +10,74 @@ import { KPIs } from "../shared/ui/KPIs";
 
 interface PlanPageProps {
   setModal: (m: ModalType) => void;
+  openOrder: (orderId: string) => void;
 }
 
-export default function PlanPage({ setModal }: PlanPageProps) {
+export default function PlanPage({ setModal, openOrder }: PlanPageProps) {
+  const [filter, setFilter] = useState("Все");
+  const { date, plan, orders, staff, loading, replanning, error, rebuildPlan } =
+    useDispatchData();
+  const staffById = new Map(staff.map((person) => [person.staff_id, person]));
+  const orderById = new Map(orders.map((order) => [order.order_id, order]));
+  const routes = (plan?.routes ?? []).filter((route) => {
+    const employee = staffById.get(route.staff_id);
+    if (filter === "3ЛТП") return employee?.profiles.includes("LTP3");
+    if (filter === "Инсталляция") return employee?.profiles.includes("INSTALL");
+    if (filter === "Высокий риск") {
+      return route.stops.some((stop) =>
+        plan?.alerts.some(
+          (alert) => alert.type === "LATE_RISK" && alert.order_id === stop.order_id,
+        ),
+      );
+    }
+    return true;
+  });
+
+  function timelinePosition(value: string) {
+    const time = (value.includes("T") ? value.slice(11, 16) : value)
+      .split(":")
+      .map(Number);
+    if (time.length < 2 || time.some(Number.isNaN)) return 0;
+    const minutes = time[0] * 60 + time[1] - 8 * 60;
+    return Math.max(0, Math.min(100, (minutes / (13 * 60)) * 100));
+  }
+
   return (
     <div className="screen">
       <PageIntro
-        eyebrow="ПЛАН НА 14 НОЯБРЯ"
+        eyebrow={`ПЛАН НА ${date}`}
         title="План и загрузка"
-        subtitle="Распределение работ и контроль временных слотов"
+        subtitle={plan ? `Версия ${plan.plan_version} · актуально на ${plan.as_of.slice(11, 16)}` : "План смены"}
         actions={
-          <Button
-            variant="secondary"
-            icon={<SlidersHorizontal size={16} />}
-            onClick={() => setModal("scenario")}
-          >
-            Сценарный анализ
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              icon={<SlidersHorizontal size={16} />}
+              onClick={() => setModal("scenario")}
+            >
+              Сценарный анализ
+            </Button>
+            <Button
+              variant="secondary"
+              icon={<RefreshCw size={16} className={replanning ? "spin" : ""} />}
+              disabled={loading || replanning}
+              onClick={() => void rebuildPlan()}
+            >
+              {replanning ? "Перестраиваем…" : "Перестроить план"}
+            </Button>
+          </>
         }
       />
-      <KPIs />
+      {error && <div className="card" role="alert">{error}</div>}
+      {loading && <div className="card" role="status">Загружаем план…</div>}
+      <KPIs plan={plan} />
       <div className="section-toolbar">
-        <Chips items={["Все", "3ЛТП", "Инсталляция", "Высокий риск"]} />
-        <span>Оптимизировано в 09:02</span>
+        <Chips
+          items={["Все", "3ЛТП", "Инсталляция", "Высокий риск"]}
+          selected={filter}
+          onSelect={setFilter}
+        />
+        <span>{plan ? `План версии ${plan.plan_version}` : "План пока не построен"}</span>
       </div>
       <div className="gantt card">
         <div className="gantt-head">
@@ -43,51 +89,89 @@ export default function PlanPage({ setModal }: PlanPageProps) {
           )}
         </div>
         <div className="group-row">
-          <ChevronDown size={15} /> 3ЛТП <span>28 сотрудников</span>
+          <ChevronDown size={15} /> Маршруты <span>{routes.length} сотрудников</span>
         </div>
-        {employees.slice(0, 4).map((e, i) => (
-          <div className="gantt-row" key={e.name}>
+        {routes.map((route) => {
+          const employee = staffById.get(route.staff_id);
+          return (
+          <div className="gantt-row" key={route.staff_id}>
             <div className="gantt-person">
-              <span className="avatar">{e.initials}</span>
+              <span className="avatar">{(employee?.display_name ?? route.staff_id).slice(0, 2)}</span>
               <span>
-                <b>{e.name}</b>
-                <small>{e.center.replace("СЦ ", "")}</small>
+                <b>{employee?.display_name ?? route.staff_id}</b>
+                <small>
+                  {route.service_center_id}
+                  {route.team_staff_ids?.length
+                    ? ` · бригада ${route.team_staff_ids.join(" + ")}`
+                    : ""}
+                </small>
               </span>
             </div>
             <div className="timeline">
-              <div className="now-line" />
-              <Tooltip text="ул. Малышева, 51 · Диагностика PON · 45 мин">
-                <button
-                  onClick={() => setModal("order")}
-                  className="bar green"
-                  style={{ left: `${7 + i * 2}%`, width: "12%" }}
-                >
-                  Малышева, 51
-                </button>
-              </Tooltip>
-              <Tooltip text="Пополнение АО — 15 мин">
-                <span className="bar blue" style={{ left: `${23 + i * 3}%`, width: "7%" }} />
-              </Tooltip>
-              <span className="bar gray" style={{ left: "38%", width: "8%" }}>
-                Обед
-              </span>
-              <Tooltip
-                text={i === 3 ? "Риск опоздания: задержка 22 мин" : "Запланированный визит"}
-              >
-                <button
-                  onClick={() => setModal("order")}
-                  className={`bar ${i === 3 ? "yellow" : "green"}`}
-                  style={{ left: `${52 + i * 4}%`, width: "14%" }}
-                >
-                  {i === 3 ? "Риск +22" : "Визит"}
-                </button>
-              </Tooltip>
+              {plan && (
+                <div className="now-line" style={{ left: `${timelinePosition(plan.as_of)}%` }} />
+              )}
+              {route.stops.filter((stop) => stop.type === "VISIT" || stop.type === "BREAK" || stop.type === "RESTOCK").map((stop) => {
+                if (stop.type === "BREAK") {
+                  return (
+                    <span
+                      key={`${route.staff_id}-${stop.seq}`}
+                      className="bar gray"
+                      style={{
+                        left: `${timelinePosition(stop.start)}%`,
+                        width: `${Math.max(2, timelinePosition(stop.end) - timelinePosition(stop.start))}%`,
+                      }}
+                    >
+                      Перерыв
+                    </span>
+                  );
+                }
+                if (stop.type === "RESTOCK") {
+                  return (
+                    <Tooltip
+                      key={`${route.staff_id}-${stop.seq}`}
+                      text={`Пополнение оборудования · ${stop.location_id}`}
+                    >
+                      <span
+                        className="bar blue"
+                        style={{
+                          left: `${timelinePosition(stop.start)}%`,
+                          width: `${Math.max(2, timelinePosition(stop.end) - timelinePosition(stop.start))}%`,
+                        }}
+                      >
+                        Пополнение
+                      </span>
+                    </Tooltip>
+                  );
+                }
+                const order = stop.order_id ? orderById.get(stop.order_id) : undefined;
+                const risky = plan?.alerts.some(
+                  (alert) => alert.type === "LATE_RISK" && alert.order_id === stop.order_id,
+                );
+                return (
+                  <Tooltip key={`${route.staff_id}-${stop.seq}`} text={`${order?.address ?? stop.location_id} · ${stop.order_id ?? ""}`}>
+                    <button
+                      onClick={() => stop.order_id && openOrder(stop.order_id)}
+                      className={`bar ${risky ? "yellow" : "green"}`}
+                      style={{
+                        left: `${timelinePosition(stop.start)}%`,
+                        width: `${Math.max(2, timelinePosition(stop.end) - timelinePosition(stop.start))}%`,
+                      }}
+                    >
+                      {order?.address ?? stop.order_id}
+                    </button>
+                  </Tooltip>
+                );
+              })}
             </div>
           </div>
-        ))}
-        <div className="group-row">
-          <ChevronRight size={15} /> Инсталляторы <span>12 сотрудников</span>
-        </div>
+          );
+        })}
+        {!loading && routes.length === 0 && (
+          <div className="group-row">
+            <ChevronRight size={15} /> В плане пока нет назначенных маршрутов
+          </div>
+        )}
       </div>
     </div>
   );

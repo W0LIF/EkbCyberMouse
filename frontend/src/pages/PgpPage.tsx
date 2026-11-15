@@ -1,30 +1,37 @@
-import { Gauge, Zap } from "lucide-react";
-import { pgpGroups } from "../shared/mock/pgp";
+import { RefreshCw, Zap } from "lucide-react";
+import { useDispatchData } from "../features/dispatch/DispatchDataContext";
 import { Button } from "../shared/ui/Button";
 import { Status } from "../shared/ui/Status";
-import { Tooltip } from "../shared/ui/Tooltip";
 import { PageIntro } from "../shared/ui/PageIntro";
-import { useToast } from "../features/toast/ToastProvider";
 
 export default function PgpPage() {
-  const { toast } = useToast();
+  const { plan, orders, loading, error, refresh } = useDispatchData();
+  const orderById = new Map(orders.map((order) => [order.order_id, order]));
+  const groups = plan?.pgp_groups ?? [];
 
   return (
     <div className="screen">
       <PageIntro
-        eyebrow="3 ГРУППОВЫХ СОБЫТИЯ"
+        eyebrow={`${groups.length} ГРУППОВЫХ СОБЫТИЙ`}
         eyebrowTone="purple"
         title="Проактивные групповые повреждения"
-        subtitle="Обращения, объединённые по сетевому узлу"
+        subtitle="Группы и наряды из текущего диспетчерского плана"
         actions={
-          <Button variant="secondary">
-            <Gauge size={17} /> Правила выявления
+          <Button
+            variant="secondary"
+            icon={<RefreshCw size={16} />}
+            disabled={loading}
+            onClick={() => void refresh()}
+          >
+            Обновить
           </Button>
         }
       />
+      {error && <div className="card" role="alert">{error}</div>}
+      {loading && <div className="card" role="status">Загружаем группы…</div>}
       <div className="pgp-grid">
-        {pgpGroups.map((g) => (
-          <article className="pgp-card card" key={g.nodeId}>
+        {groups.map((group) => (
+          <article className="pgp-card card" key={group.group_id}>
             <div className="pgp-accent" />
             <div className="pgp-info">
               <div className="pgp-title">
@@ -32,8 +39,8 @@ export default function PgpPage() {
                   <Zap size={18} />
                 </span>
                 <div>
-                  <h2>Узел {g.nodeId}</h2>
-                  <p>{g.description}</p>
+                  <h2>Узел {group.access_node_id}</h2>
+                  <p>{group.comment ?? `${group.order_ids.length} нарядов в группе`}</p>
                 </div>
                 <Status>ПГП</Status>
               </div>
@@ -42,29 +49,27 @@ export default function PgpPage() {
                   <tr>
                     <th>ID</th>
                     <th>Адрес</th>
-                    <th>Регистрация</th>
+                    <th>Слот</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {g.orders.map((o) => (
-                    <tr key={o.id}>
-                      <td>
-                        <code>{o.id}</code>
-                      </td>
-                      <td>{o.address}</td>
-                      <td>{o.registration}</td>
-                    </tr>
-                  ))}
+                  {group.order_ids.map((orderId) => {
+                    const order = orderById.get(orderId);
+                    return (
+                      <tr key={orderId}>
+                        <td><code>{orderId}</code></td>
+                        <td>{order?.address ?? "Адрес недоступен"}</td>
+                        <td>
+                          {order
+                            ? `${order.slot.start.slice(11, 16)}–${order.slot.end.slice(11, 16)}`
+                            : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
-              <Tooltip text="Наряды будут сняты с выездных бригад и переданы в профильное подразделение без выполнения работ на месте">
-                <Button
-                  variant="purple"
-                  onClick={() => toast(`Группа ${g.nodeId} передана в станционное подразделение`)}
-                >
-                  Передать в станционное подразделение
-                </Button>
-              </Tooltip>
+              <small>Обнаружено: {new Date(group.detected_at).toLocaleString("ru-RU")}</small>
             </div>
             <div className="mini-map">
               <div className="mini-roads" />
@@ -72,11 +77,14 @@ export default function PgpPage() {
               <span className="node">
                 <Zap size={16} />
               </span>
-              <b>{g.district} район</b>
-              <small>Радиус влияния 500 м</small>
+              <b>{group.access_node_id}</b>
+              <small>{group.order_ids.length} нарядов · передача в СЦ</small>
             </div>
           </article>
         ))}
+        {!loading && groups.length === 0 && (
+          <div className="card">В текущем плане нет групповых повреждений.</div>
+        )}
       </div>
     </div>
   );

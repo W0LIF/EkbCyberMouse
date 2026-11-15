@@ -15,7 +15,13 @@ class SqlReferenceRepo:
 
     async def replace_all(self, data: ReferenceData) -> None:
         """Полностью заменяет справочники."""
-        await self.session.execute(text("TRUNCATE TABLE service_centers, staff, access_nodes, buildings, work_types CASCADE;"))
+        await self.session.execute(
+            text(
+                "TRUNCATE TABLE alerts, events, plan_versions, days, orders, "
+                "service_centers, staff, access_node_buildings, access_nodes, "
+                "buildings, work_types RESTART IDENTITY CASCADE"
+            )
+        )
         
         for sc in data.service_centers:
             await self.session.execute(

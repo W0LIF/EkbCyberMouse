@@ -19,6 +19,7 @@ import { navItems } from "../../shared/config/nav";
 import { Logo } from "../../shared/ui/Logo";
 import { Tooltip } from "../../shared/ui/Tooltip";
 import { useAuth } from "../../features/auth/AuthContext";
+import { useDispatchData } from "../../features/dispatch/DispatchDataContext";
 
 const iconMap: Record<string, typeof Map> = {
   Map,
@@ -41,6 +42,7 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   const { logout } = useAuth();
+  const { plan } = useDispatchData();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -55,6 +57,16 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
       <nav>
         {navItems.map((item, index) => {
           const Icon = iconMap[item.icon] ?? Map;
+          const badge =
+            item.label === "Риски"
+              ? plan?.alerts.filter(
+                  (alert) => alert.type === "LATE_RISK" && alert.status === "ACTIVE",
+                ).length
+              : item.label === "Нераспределённые"
+                ? plan?.unassigned.length
+                : item.label === "ПГП"
+                  ? plan?.pgp_groups.length
+                  : undefined;
           const isDup = index === 4 && location.pathname === "/risks";
           const isActive = location.pathname === `/${item.id}` && !isDup;
           return (
@@ -65,7 +77,9 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
               >
                 <Icon size={20} />
                 <span>{item.label}</span>
-                {item.badge && <b className={`badge ${item.tone}`}>{item.badge}</b>}
+                {badge !== undefined && (
+                  <b className={`badge ${item.tone}`}>{badge}</b>
+                )}
               </button>
             </Tooltip>
           );

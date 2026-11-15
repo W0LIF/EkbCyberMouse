@@ -1,192 +1,551 @@
 from __future__ import annotations
+
 import time
-from collections import defaultdict
+import uuid
 from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.concurrency import run_in_threadpool
 
 from api.app.models import (
-    Alert, CancelledOrder, DayInput, Event, EventResult, Order, Plan, PlanSummary, PgpGroup, UnassignedOrder
+    Alert,
+    CancelledOrder,
+    DayInput,
+    Event,
+    EventResult,
+    NewOrderEvent,
+    OrderCancelledEvent,
+    Order,
+    OrderTransferredEvent,
+    Plan,
+    PlanSummary,
+    Route,
+    StaffUnavailableEvent,
+    UnassignedOrder,
+    VisitDelayedEvent,
 )
 from api.app.repositories.db import get_db
+from api.app.repositories.sql_alerts_repo import SqlAlertsRepo
 from api.app.repositories.sql_day_repo import SqlDayRepo
+from api.app.repositories.sql_events_repo import SqlEventsRepo
 from api.app.repositories.sql_orders_repo import SqlOrdersRepo
 from api.app.repositories.sql_plans_repo import SqlPlansRepo
 from api.app.repositories.sql_reference_repo import SqlReferenceRepo
-from api.app.repositories.sql_events_repo import SqlEventsRepo
-from api.app.repositories.sql_alerts_repo import SqlAlertsRepo
 from api.app.services.matrix_store import matrix_store
+from api.app.services.pgp import detect_pgp_groups
+from api.app.services.alerts import (
+    generate_late_risk_alerts,
+    generate_new_pgp_alerts,
+)
+from api.app.services.duration_forecast import apply_duration_forecasts
 from solver.app.vrp import solve_vrp
 
 router = APIRouter(tags=["events"])
-_alert_counter: dict[str, int] = {}
 
-def _next_alert_id(date: str) -> str:
-    _alert_counter[date] = _alert_counter.get(date, 0) + 1
-    return f"ALR-{date.replace('-', '')}-{_alert_counter[date]:04d}"
 
-# (Функции _row_to_order_dict и _detect_pgp оставляем без изменений, они отличные!)
 def _row_to_order_dict(row: dict) -> dict:
-    def _iso(v):
-        if v is None: return None
-        if isinstance(v, datetime): return v.isoformat(timespec="seconds")
-        return str(v)
+    def iso(value):
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value.isoformat(timespec="seconds")
+        return str(value)
+
     return {
-        "order_id": row["order_id"], "work_type_code": row["work_type_code"], "technology": row["technology"],
-        "building_id": row["building_id"], "address": row["address"], "lat": float(row["lat"]), "lon": float(row["lon"]),
-        "building_type": row["building_type"], "requires_height": bool(row["requires_height"]),
-        "access_node_id": row["access_node_id"], "registered_at": _iso(row["registered_at"]),
-        "slot": {"start": _iso(row["slot_start"]), "end": _iso(row["slot_end"])},
-        "latest_start": _iso(row["latest_start"]), "deadline": _iso(row["deadline"]),
-        "required_equipment": {"ONT": int(row["req_ont"]), "ROUTER": int(row["req_router"]), "STB": int(row["req_stb"])},
-        "is_repeat": bool(row["is_repeat"]), "previous_order_id": row.get("previous_order_id"),
+        "order_id": row["order_id"],
+        "work_type_code": row["work_type_code"],
+        "technology": row["technology"],
+        "building_id": row["building_id"],
+        "address": row["address"],
+        "lat": float(row["lat"]),
+        "lon": float(row["lon"]),
+        "building_type": row["building_type"],
+        "requires_height": bool(row["requires_height"]),
+        "access_node_id": row["access_node_id"],
+        "registered_at": iso(row["registered_at"]),
+        "slot": {"start": iso(row["slot_start"]), "end": iso(row["slot_end"])},
+        "latest_start": iso(row["latest_start"]),
+        "deadline": iso(row["deadline"]),
+        "required_equipment": {
+            "ONT": int(row["req_ont"]),
+            "ROUTER": int(row["req_router"]),
+            "STB": int(row["req_stb"]),
+        },
+        "is_repeat": bool(row["is_repeat"]),
+        "previous_order_id": row.get("previous_order_id"),
     }
 
-def _detect_pgp(orders_dicts: list[dict], work_types: list, now: datetime) -> list[PgpGroup]:
-    pgp_codes = set()
-    for wt in work_types:
-        wt_dict = wt if isinstance(wt, dict) else wt.model_dump()
-        if wt_dict.get("pgp_relevant"): pgp_codes.add(wt_dict["code"])
 
-    node_orders = defaultdict(list)
-    for o in orders_dicts:
-        if o["work_type_code"] in pgp_codes and o.get("access_node_id"):
-            node_orders[o["access_node_id"]].append(o)
+def _recalculate_after(
+    route: dict, stop_index: int, event_timestamp: datetime
+) -> None:
+    stops = route["stops"]
+    for index in range(stop_index + 1, len(stops)):
+        previous, current = stops[index - 1], stops[index]
+        previous_end = datetime.fromisoformat(previous["end"])
+        departure_time = max(previous_end, event_timestamp)
+        travel_sec, distance_m = matrix_store.get(
+            previous["location_id"],
+            current["location_id"],
+            departure_time,
+        )
+        old_arrival = datetime.fromisoformat(current["arrival"])
+        old_start = datetime.fromisoformat(current["start"])
+        old_end = datetime.fromisoformat(current["end"])
+        duration = old_end - old_start
+        arrival = max(
+            old_arrival,
+            max(previous_end, event_timestamp) + timedelta(seconds=travel_sec),
+        )
+        start = max(old_start, arrival)
+        current["travel_sec"] = travel_sec
+        current["distance_m"] = distance_m
+        current["arrival"] = arrival.isoformat(timespec="seconds")
+        current["start"] = start.isoformat(timespec="seconds")
+        current["end"] = (start + duration).isoformat(timespec="seconds")
 
-    groups = []
-    group_idx = 1
-    for node_id, olist in node_orders.items():
-        if len(olist) < 3: continue
-        olist_sorted = sorted(olist, key=lambda x: x["registered_at"])
-        i = 0
-        while i < len(olist_sorted):
-            window = []
-            try: base_time = datetime.fromisoformat(olist_sorted[i]["registered_at"])
-            except: i += 1; continue
-            for j in range(i, len(olist_sorted)):
-                try: t = datetime.fromisoformat(olist_sorted[j]["registered_at"])
-                except: break
-                if (t - base_time) <= timedelta(minutes=60): window.append(olist_sorted[j])
-                else: break
-            if len(window) >= 3:
-                groups.append(PgpGroup(
-                    group_id=f"PGP-{node_id}-{group_idx:02d}", access_node_id=node_id,
-                    order_ids=[w["order_id"] for w in window], detected_at=now,
-                    action="TRANSFER_TO_STATION", comment=f"ПГП на {node_id}: {len(window)} нарядов за 60 мин",
-                ))
-                group_idx += 1; i += len(window)
-            else: i += 1
-    return groups
 
-@router.post("/days/{date}/events", response_model=EventResult)
-async def post_event(date: str, event: Event, db: AsyncSession = Depends(get_db)):
-    t0 = time.time()
-    day_repo = SqlDayRepo(db); orders_repo = SqlOrdersRepo(db); plans_repo = SqlPlansRepo(db)
-    events_repo = SqlEventsRepo(db); alerts_repo = SqlAlertsRepo(db); ref_repo = SqlReferenceRepo(db)
-
-    # 1. Проверки данных
-    day_row = await day_repo.get(date)
-    if not day_row: raise HTTPException(404, f"День {date} не загружен")
-    staff = await ref_repo.get_staff(); work_types = await ref_repo.get_work_types()
-    service_centers = await ref_repo.get_service_centers()
-    if not staff or not work_types: raise HTTPException(400, "Справочники не загружены")
-    if not matrix_store.is_loaded(): raise HTTPException(400, "Матрица не загружена")
-    
-    plan_data = await plans_repo.get_latest(date)
-    if not plan_data: raise HTTPException(404, f"План на {date} ещё не построен")
-
-    # 2. Идемпотентность и порядок
-    if await events_repo.get_by_event_id(date, event.event_id):
-        return EventResult(event_id=event.event_id, accepted=True, duplicate=True, plan_version=plan_data.get("plan_version", 1), as_of=plan_data.get("as_of"), message="Дубликат")
-    last_ts = await events_repo.get_last_timestamp(date)
-    if last_ts and event.timestamp < last_ts: raise HTTPException(409, "timestamp раньше последнего события")
-
-    # 3. Загрузка нарядов
-    orders_raw = await orders_repo.get_by_date(date)
-    orders_dicts = [_row_to_order_dict(r) for r in orders_raw]
-    
-    # Обработка новых/отмененных нарядов
-    if event.type == "NEW_ORDER":
-        await orders_repo.upsert_many(date, [event.order])
-        orders_raw = await orders_repo.get_by_date(date)
-        orders_dicts = [_row_to_order_dict(r) for r in orders_raw]
-    
-    cancelled_ids = {c["order_id"] for c in plan_data.get("cancelled", [])}
-    if event.type == "ORDER_CANCELLED": cancelled_ids.add(event.order_id)
-        
-    unavailable_staff_ids = {r["staff_id"] for r in plan_data.get("routes", []) if r.get("status") == "UNAVAILABLE"}
-    if event.type == "STAFF_UNAVAILABLE": unavailable_staff_ids.add(event.staff_id)
-
-    # 4. ПГП
-    active_orders = [o for o in orders_dicts if o["order_id"] not in cancelled_ids]
-    pgp_groups = _detect_pgp(active_orders, work_types, event.timestamp)
-    pgp_order_ids = {oid for g in pgp_groups for oid in g.order_ids}
-    
-    # 5. ЗАМОРОЗКА (H10) - самое важное!
-    # Находим визиты, которые УЖЕ начались (start < now), и убираем их из солвера.
-    # Солвер должен распределять только НЕ начатые наряды.
-    frozen_order_ids = set()
-    for route in plan_data.get("routes", []):
-        for stop in route.get("stops", []):
-            if stop.get("type") == "VISIT" and stop.get("start"):
-                if datetime.fromisoformat(stop["start"]) < event.timestamp:
-                    frozen_order_ids.add(stop["order_id"])
-    
-    orders_for_solver = [
-        o for o in active_orders 
-        if o["order_id"] not in pgp_order_ids and o["order_id"] not in frozen_order_ids
+def _frozen_stops(route: dict, event_timestamp: datetime) -> list[dict]:
+    return [
+        stop
+        for stop in route["stops"]
+        if stop.get("status") in {"IN_PROGRESS", "DONE"}
+        or datetime.fromisoformat(stop["start"]) < event_timestamp
     ]
 
-    # 6. Вызов СОЛВЕРА (исправлена сигнатура!)
-    # Формируем DayInput
-    day_input = DayInput(date=date, now=day_row["model_now"], orders=[Order(**o) for o in orders_for_solver], absent_staff_ids=day_row["absent_staff_ids"] or [])
-    
-    if orders_for_solver:
-        try:
-            # Ограничиваем время солвера 3 секундами, чтобы уложиться в SLA
-            new_plan = solve_vrp(day_input, staff, matrix_store.as_matrix(), work_types)
-        except Exception as e:
-            new_plan = Plan(date=date, plan_version=plan_data.get("plan_version", 1)+1, as_of=event.timestamp, routes=[], unassigned=[], pgp_groups=[], cancelled=[], alerts=[])
+
+@router.post("/days/{date}/events", response_model=EventResult)
+async def post_event(
+    date: str,
+    event: Event,
+    db: AsyncSession = Depends(get_db),
+):
+    started = time.monotonic()
+    day_repo = SqlDayRepo(db)
+    orders_repo = SqlOrdersRepo(db)
+    plans_repo = SqlPlansRepo(db)
+    events_repo = SqlEventsRepo(db)
+    alerts_repo = SqlAlertsRepo(db)
+    reference_repo = SqlReferenceRepo(db)
+
+    day_row = await day_repo.get(date)
+    if not day_row:
+        raise HTTPException(404, f"День {date} не загружен")
+    plan_data = await plans_repo.get_latest(date)
+    if not plan_data:
+        raise HTTPException(404, f"План на {date} ещё не построен")
+    if not matrix_store.is_loaded():
+        raise HTTPException(400, "Матрица не загружена")
+
+    if await events_repo.get_by_event_id(date, event.event_id):
+        return EventResult(
+            event_id=event.event_id,
+            accepted=True,
+            duplicate=True,
+            plan_version=plan_data["plan_version"],
+            as_of=plan_data["as_of"],
+            message="Дубликат события",
+        )
+
+    last_timestamp = await events_repo.get_last_timestamp(date)
+    if last_timestamp and event.timestamp < last_timestamp:
+        raise HTTPException(409, "timestamp раньше последнего события")
+
+    staff = await reference_repo.get_staff()
+    work_types = await reference_repo.get_work_types()
+    centers = await reference_repo.get_service_centers()
+    staff_ids = {person.staff_id for person in staff}
+    if not staff or not work_types or not centers:
+        raise HTTPException(400, "Справочники не загружены")
+
+    all_orders = [
+        _row_to_order_dict(row) for row in await orders_repo.get_by_date(date)
+    ]
+    if isinstance(event, NewOrderEvent):
+        expected_prefix = f"ORD-{date.replace('-', '')}-"
+        if not event.order.order_id.startswith(expected_prefix):
+            raise HTTPException(422, "order_id не соответствует дате события")
+        if any(item["order_id"] == event.order.order_id for item in all_orders):
+            raise HTTPException(422, f"Наряд {event.order.order_id} уже существует")
+        all_orders.append(event.order.model_dump(mode="json"))
+
+    order_ids = {item["order_id"] for item in all_orders}
+    if isinstance(event, OrderCancelledEvent) and event.order_id not in order_ids:
+        raise HTTPException(422, f"Наряд {event.order_id} не найден")
+    if isinstance(event, (VisitDelayedEvent, OrderTransferredEvent)):
+        if event.staff_id not in staff_ids:
+            raise HTTPException(422, f"Сотрудник {event.staff_id} не найден")
+        matching = [
+            (route, stop)
+            for route in plan_data["routes"]
+            for stop in route["stops"]
+            if stop.get("order_id") == event.order_id
+            and route["staff_id"] == event.staff_id
+            and stop["type"] == "VISIT"
+        ]
+        if not matching:
+            raise HTTPException(422, "Визит сотрудника не найден в текущем плане")
+        route, stop = matching[0]
+        if datetime.fromisoformat(stop["start"]) >= event.timestamp:
+            raise HTTPException(422, "Событие относится к ещё не начатому визиту")
+        if isinstance(event, VisitDelayedEvent):
+            end_time = event.expected_end
+        else:
+            end_time = event.actual_end
+        stop["end"] = end_time.isoformat(timespec="seconds")
+        _recalculate_after(route, route["stops"].index(stop), event.timestamp)
+    if isinstance(event, StaffUnavailableEvent) and event.staff_id not in staff_ids:
+        raise HTTPException(422, f"Сотрудник {event.staff_id} не найден")
+
+    cancelled_ids = {item["order_id"] for item in plan_data.get("cancelled", [])}
+    if isinstance(event, OrderCancelledEvent):
+        if any(
+            stop.get("order_id") == event.order_id
+            and datetime.fromisoformat(stop["start"]) < event.timestamp
+            for route in plan_data["routes"]
+            for stop in route["stops"]
+        ):
+            raise HTTPException(422, "Нельзя отменить уже начатый визит")
+        cancelled_ids.add(event.order_id)
+
+    frozen_order_ids = {
+        stop["order_id"]
+        for route in plan_data["routes"]
+        for stop in route["stops"]
+        if stop["type"] == "VISIT"
+        and stop.get("order_id")
+        and datetime.fromisoformat(stop["start"]) < event.timestamp
+    }
+    active_orders = [
+        order for order in all_orders if order["order_id"] not in cancelled_ids
+    ]
+    pgp_groups = detect_pgp_groups(
+        [
+            order
+            for order in active_orders
+            if order["order_id"] not in frozen_order_ids
+        ],
+        work_types,
+        event.timestamp,
+    )
+    pgp_order_ids = {order_id for group in pgp_groups for order_id in group.order_ids}
+
+    unavailable_staff_ids = {
+        route["staff_id"]
+        for route in plan_data["routes"]
+        if route.get("status") == "UNAVAILABLE"
+        and (
+            not route.get("unavailable_until")
+            or datetime.fromisoformat(route["unavailable_until"]) > event.timestamp
+        )
+    }
+    if isinstance(event, StaffUnavailableEvent):
+        unavailable_staff_ids.add(event.staff_id)
+
+    retained_routes = []
+    retained_order_ids = set()
+    for route_data in plan_data["routes"]:
+        route_staff_ids = {
+            route_data["staff_id"],
+            *(route_data.get("team_staff_ids") or []),
+        }
+        is_unavailable = bool(route_staff_ids & unavailable_staff_ids)
+        was_temporarily_unavailable = (
+            route_data.get("status") == "UNAVAILABLE"
+            and route_data.get("unavailable_until") is not None
+            and datetime.fromisoformat(route_data["unavailable_until"])
+            <= event.timestamp
+        )
+        frozen_stops = _frozen_stops(route_data, event.timestamp)
+        if not frozen_stops and not is_unavailable:
+            continue
+
+        original_stops = list(route_data["stops"])
+        route_data = {
+            **route_data,
+            "stops": frozen_stops,
+        }
+        if is_unavailable:
+            route_data["status"] = "UNAVAILABLE"
+            route_data["unavailable_from"] = event.timestamp.isoformat(
+                timespec="seconds"
+            )
+            unavailable_until = (
+                event.until
+                if isinstance(event, StaffUnavailableEvent)
+                and event.staff_id in route_staff_ids
+                else None
+            )
+            route_data["unavailable_until"] = (
+                unavailable_until.isoformat(timespec="seconds")
+                if unavailable_until
+                else route_data.get("unavailable_until")
+            )
+            route_data["stops"] = [
+                stop for stop in route_data["stops"] if stop["type"] != "DEPOT_END"
+            ]
+        else:
+            if was_temporarily_unavailable:
+                route_data["status"] = "ACTIVE"
+                route_data["unavailable_from"] = None
+                route_data["unavailable_until"] = None
+            depot_end = next(
+                (stop for stop in original_stops if stop["type"] == "DEPOT_END"),
+                None,
+            )
+            if depot_end is not None:
+                route_data["stops"].append(depot_end)
+                _recalculate_after(
+                    route_data,
+                    len(route_data["stops"]) - 2,
+                    event.timestamp,
+                )
+            elif was_temporarily_unavailable and route_data["stops"]:
+                previous = route_data["stops"][-1]
+                travel_sec, distance_m = matrix_store.get(
+                    previous["location_id"],
+                    route_data["service_center_id"],
+                    max(datetime.fromisoformat(previous["end"]), event.timestamp),
+                )
+                depot_arrival = max(
+                    datetime.fromisoformat(previous["end"]),
+                    event.timestamp,
+                ) + timedelta(seconds=travel_sec)
+                route_data["stops"].append(
+                    {
+                        "seq": len(route_data["stops"]) + 1,
+                        "type": "DEPOT_END",
+                        "location_id": route_data["service_center_id"],
+                        "arrival": depot_arrival.isoformat(timespec="seconds"),
+                        "start": depot_arrival.isoformat(timespec="seconds"),
+                        "end": depot_arrival.isoformat(timespec="seconds"),
+                        "travel_sec": travel_sec,
+                        "distance_m": distance_m,
+                        "equipment_after": previous.get("equipment_after"),
+                    }
+                )
+        route_data["stops"] = [
+            stop
+            for stop in route_data["stops"]
+            if stop.get("order_id") not in cancelled_ids
+            and stop.get("order_id") not in pgp_order_ids
+        ]
+        for sequence, stop in enumerate(route_data["stops"], start=1):
+            stop["seq"] = sequence
+            if stop.get("order_id") and stop["type"] == "VISIT":
+                retained_order_ids.add(stop["order_id"])
+        totals = route_data.get("totals") or {}
+        visit_stops = [
+            stop for stop in route_data["stops"] if stop["type"] == "VISIT"
+        ]
+        totals.update(
+            visits=len(visit_stops),
+            travel_sec=sum(stop.get("travel_sec") or 0 for stop in route_data["stops"]),
+            distance_m=sum(stop.get("distance_m") or 0 for stop in route_data["stops"]),
+            work_min=sum(
+                int(
+                    (
+                        datetime.fromisoformat(stop["end"])
+                        - datetime.fromisoformat(stop["start"])
+                    ).total_seconds()
+                    // 60
+                )
+                for stop in visit_stops
+            ),
+        )
+        route_data["totals"] = totals
+        retained_routes.append(Route.model_validate(route_data))
+
+    solver_orders = [
+        order
+        for order in active_orders
+        if order["order_id"] not in frozen_order_ids
+        and order["order_id"] not in pgp_order_ids
+        and order["order_id"] not in retained_order_ids
+    ]
+    apply_duration_forecasts(
+        solver_orders,
+        await orders_repo.get_duration_history(),
+        [work_type.model_dump() for work_type in work_types],
+    )
+    retained_staff_ids = {
+        staff_id
+        for route in retained_routes
+        for staff_id in [route.staff_id, *(route.team_staff_ids or [])]
+    }
+    solver_staff = [
+        person
+        for person in staff
+        if person.staff_id not in unavailable_staff_ids
+        and person.staff_id not in retained_staff_ids
+    ]
+    event_day = DayInput(
+        date=date,
+        now=event.timestamp,
+        orders=[Order.model_validate(order) for order in solver_orders],
+        absent_staff_ids=sorted(unavailable_staff_ids),
+    )
+
+    if solver_orders and solver_staff:
+        new_plan = await run_in_threadpool(
+            solve_vrp,
+            date=date,
+            day=event_day,
+            orders=solver_orders,
+            staff=solver_staff,
+            work_types=work_types,
+            service_centers=centers,
+            matrix=matrix_store.as_matrix(),
+            plan_version=plan_data["plan_version"] + 1,
+            max_runtime_seconds=8,
+        )
     else:
-        new_plan = Plan(date=date, plan_version=plan_data.get("plan_version", 1)+1, as_of=event.timestamp, routes=[], unassigned=[], pgp_groups=[], cancelled=[], alerts=[])
+        new_plan = Plan(
+            date=date,
+            plan_version=plan_data["plan_version"] + 1,
+            as_of=event.timestamp,
+            routes=[],
+            unassigned=[],
+            pgp_groups=[],
+            cancelled=[],
+            alerts=[],
+        )
 
-    # 7. Мержим замороженные визиты обратно в план (они должны остаться на своих местах)
-    for route_data in plan_data.get("routes", []):
-        new_route = next((r for r in new_plan.routes if r.staff_id == route_data["staff_id"]), None)
-        if new_route:
-            for stop_data in route_data.get("stops", []):
-                if stop_data.get("order_id") in frozen_order_ids:
-                    # Возвращаем замороженный визит в маршрут
-                    from api.app.models import Stop
-                    new_route.stops.append(Stop(**stop_data))
-            # Сортируем по seq
-            new_route.stops.sort(key=lambda x: x.seq)
-
-    # 8. Обновляем ПГП и отмены
+    new_plan.routes = retained_routes + new_plan.routes
     new_plan.pgp_groups = pgp_groups
-    new_plan.cancelled = [CancelledOrder(order_id=oid, cancelled_at=event.timestamp) for oid in cancelled_ids]
+    new_plan.cancelled = [
+        CancelledOrder(
+            order_id=order_id,
+            cancelled_at=event.timestamp,
+            event_id=(
+                event.event_id
+                if isinstance(event, OrderCancelledEvent)
+                and order_id == event.order_id
+                else None
+            ),
+        )
+        for order_id in sorted(cancelled_ids)
+    ]
     new_plan.based_on_event_id = event.event_id
+    new_plan.as_of = event.timestamp
 
-    # 9. Алерты (упрощенно)
-    new_alerts = []
-    for u in new_plan.unassigned:
-        new_alerts.append(Alert(
-            alert_id=_next_alert_id(date), created_at=event.timestamp, type="UNASSIGNED",
-            status="ACTIVE", order_id=u.order_id, suggested_action="ESCALATE", applied=False, message="Не назначен"
-        ))
-    new_plan.alerts = new_alerts
+    known_elsewhere = (
+        frozen_order_ids | retained_order_ids | pgp_order_ids | cancelled_ids
+    )
+    missing_orders = [
+        order
+        for order in active_orders
+        if order["order_id"] not in known_elsewhere
+        and order["order_id"]
+        not in {item.order_id for item in new_plan.unassigned}
+        and order["order_id"]
+        not in {
+            stop.order_id
+            for route in new_plan.routes
+            for stop in route.stops
+            if stop.type == "VISIT"
+        }
+    ]
+    for order in missing_orders:
+        new_plan.unassigned.append(
+            UnassignedOrder(
+                order_id=order["order_id"],
+                reason_code="OTHER",
+                reason_text="Не удалось назначить после события",
+                suggested_action="ESCALATE",
+            )
+        )
 
-    # 10. Сохранение в БД
-    processing_ms = int((time.time() - t0) * 1000)
+    old_alerts = [Alert.model_validate(item) for item in plan_data.get("alerts", [])]
+    new_alerts = [
+        Alert(
+            alert_id=f"ALR-{date.replace('-', '')}-{uuid.uuid4().hex[:12]}",
+            created_at=event.timestamp,
+            type="UNASSIGNED",
+            status="ACTIVE",
+            order_id=item.order_id,
+            suggested_action=(
+                item.suggested_action
+                if item.suggested_action in ("REASSIGN", "RESCHEDULE")
+                else "NONE"
+            ),
+            applied=False,
+            message=f"Наряд {item.order_id} не распределен: {item.reason_text}",
+        )
+        for item in new_plan.unassigned
+    ]
+    new_alerts.extend(
+        generate_new_pgp_alerts(
+            pgp_groups,
+            plan_data.get("pgp_groups", []),
+            event.timestamp,
+        )
+    )
+    existing_late_risk_orders = {
+        alert.order_id
+        for alert in old_alerts
+        if alert.type == "LATE_RISK" and alert.status == "ACTIVE"
+    }
+    new_alerts.extend(
+        alert
+        for alert in generate_late_risk_alerts(
+            new_plan,
+            {order["order_id"]: order for order in all_orders},
+            event.timestamp,
+        )
+        if alert.order_id not in existing_late_risk_orders
+    )
+    new_plan.alerts = old_alerts + new_alerts
+    new_plan.summary = PlanSummary(
+        orders_total=len(all_orders),
+        visits_planned=len({
+            stop.order_id
+            for route in new_plan.routes
+            for stop in route.stops
+            if stop.type == "VISIT" and stop.order_id
+        }),
+        unassigned=len(new_plan.unassigned),
+        pgp_orders=len(pgp_order_ids),
+        cancelled=len(cancelled_ids),
+        travel_sec_total=sum(
+            route.totals.travel_sec or 0
+            for route in new_plan.routes
+            if route.totals
+        ),
+    )
+    processing_ms = int((time.monotonic() - started) * 1000)
     new_plan.computation_ms = processing_ms
-    
-    await events_repo.append(date, event, event.timestamp, processing_ms)
-    await plans_repo.save_version(date, new_plan)
-    await day_repo.mark_event_received(date)
-    for alert in new_alerts: await alerts_repo.append(date, alert)
+
+    if isinstance(event, NewOrderEvent):
+        await orders_repo.upsert_many(
+            date,
+            [event.order],
+            replace_existing=False,
+            commit=False,
+        )
+    await events_repo.append(
+        date, event, event.timestamp, processing_ms, commit=False
+    )
+    await plans_repo.save_version(date, new_plan, commit=False)
+    await day_repo.update_model_now(date, event.timestamp, commit=False)
+    await day_repo.mark_event_received(date, commit=False)
+    for alert in new_alerts:
+        await alerts_repo.append(date, alert, commit=False)
+    await db.commit()
 
     return EventResult(
-        event_id=event.event_id, accepted=True, duplicate=False,
-        plan_version=new_plan.plan_version, as_of=event.timestamp,
-        processing_ms=processing_ms, message=f"Событие {event.type} обработано"
+        event_id=event.event_id,
+        accepted=True,
+        duplicate=False,
+        plan_version=new_plan.plan_version,
+        as_of=event.timestamp,
+        processing_ms=processing_ms,
+        changed_staff_ids=sorted({
+            staff_id
+            for route in new_plan.routes
+            for staff_id in [route.staff_id, *(route.team_staff_ids or [])]
+        }),
+        new_alerts=new_alerts,
+        message=f"Событие {event.type} обработано",
     )

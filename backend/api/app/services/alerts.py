@@ -28,10 +28,25 @@ def generate_pgp_alert(group: PgpGroup, now: datetime) -> Alert:
         applied=True # Сразу применяем, так как мы их уже исключили из солвера
     )
 
+
+def generate_new_pgp_alerts(
+    groups: list[PgpGroup],
+    previous_groups: list[dict],
+    now: datetime,
+) -> list[Alert]:
+    previous_compositions = {
+        tuple(sorted(group.get("order_ids", []))) for group in previous_groups
+    }
+    return [
+        generate_pgp_alert(group, now)
+        for group in groups
+        if tuple(sorted(group.order_ids)) not in previous_compositions
+    ]
+
+
 def generate_late_risk_alerts(plan, orders_dict: dict, now: datetime) -> list[Alert]:
     """
-    Проходит по всем маршрутам в плане и ищет визиты, 
-    которые начинаются позже, чем latest_start (опаздывают).
+    Создает предупреждения для визитов, прогнозируемое начало которых позже latest_start.
     """
     alerts = []
     
@@ -42,9 +57,11 @@ def generate_late_risk_alerts(plan, orders_dict: dict, now: datetime) -> list[Al
                 if not order:
                     continue
                 
-                # Если прогноз прибытия позже дедлайна начала визита
-                if stop.start > order.latest_start:
-                    lateness_min = int((stop.start - order.latest_start).total_seconds() / 60)
+                latest_start = order["latest_start"]
+                if isinstance(latest_start, str):
+                    latest_start = datetime.fromisoformat(latest_start)
+                if stop.start > now and stop.start > latest_start:
+                    lateness_min = int((stop.start - latest_start).total_seconds() / 60)
                     
                     alert = Alert(
                         alert_id=f"ALR-{uuid.uuid4().hex[:8]}",
@@ -55,7 +72,7 @@ def generate_late_risk_alerts(plan, orders_dict: dict, now: datetime) -> list[Al
                         staff_id=route.staff_id,
                         forecast_start=stop.start,
                         lateness_min=lateness_min,
-                        suggested_action="REASSIGN", # Предлагаем передать другому
+                        suggested_action="REASSIGN",
                         message=f"Сотрудник {route.staff_id} опаздывает на {lateness_min} мин по наряду {stop.order_id}",
                         applied=False
                     )

@@ -10,7 +10,15 @@ class SqlEventsRepo:
     def _parse_date(self, date_str: str):
         return datetime.strptime(date_str, "%Y-%m-%d").date()
 
-    async def append(self, date: str, event: Event, processed_at: datetime, response_ms: int) -> None:
+    async def append(
+        self,
+        date: str,
+        event: Event,
+        processed_at: datetime,
+        response_ms: int,
+        *,
+        commit: bool = True,
+    ) -> None:
         d = self._parse_date(date)
         await self.session.execute(
             text("""
@@ -20,7 +28,8 @@ class SqlEventsRepo:
             {"d": d, "eid": event.event_id, "type": event.type, "ts": event.timestamp, 
              "payload": event.model_dump_json(), "proc_at": processed_at, "resp_ms": response_ms}
         )
-        await self.session.commit()
+        if commit:
+            await self.session.commit()
 
     async def get_by_event_id(self, date: str, event_id: str) -> dict | None:
         d = self._parse_date(date)
